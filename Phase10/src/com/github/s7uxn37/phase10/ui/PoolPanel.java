@@ -2,22 +2,42 @@ package com.github.s7uxn37.phase10.ui;
 
 import com.github.s7uxn37.phase10.Intelligence;
 
-public class PoolPanel extends MyPanel {
+import javax.swing.*;
+import java.awt.*;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6551708589981644368L;
+public class PoolPanel extends ModulePanel {
+	CardView viewFaceUp, viewFaceDown;
 
 	public PoolPanel(Intelligence intelligence) {
-		super("Card Pool", intelligence);
-		// TODO Auto-generated constructor stub
+		super("Card pool", intelligence);
+
+		// Initialize Content
+		JPanel content = new JPanel();
+		content.setLayout(new GridLayout(0, 1));
+
+		// Initialize CardViews
+		viewFaceUp = new CardView();
+		viewFaceDown = new CardView();
+
+		// Initialize TitlePanels with CardViews, add to Content
+		TitlePanel p1 = new TitlePanel("Face up");
+		p1.addContent(viewFaceUp);
+		content.add(p1);
+		TitlePanel p2 = new TitlePanel("Face down");
+		p2.addContent(viewFaceDown);
+		content.add(p2);
+
+		// Add Content to PlayerPanel
+		addContent(content);
 	}
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
-		
+		viewFaceDown.setCards(ai.faceDown);
+		viewFaceUp.setCards(ai.faceUp);
+
+//        invalidate();
+//        repaint();
 	}
 
 }

@@ -2,22 +2,44 @@ package com.github.s7uxn37.phase10.ui;
 
 import com.github.s7uxn37.phase10.Intelligence;
 
-public class PlayerPanel extends MyPanel {
+import javax.swing.*;
+import java.awt.*;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -2964966930475955834L;
+public class PlayerPanel extends ModulePanel {
+    CardView[] cardViews;
 
 	public PlayerPanel(Intelligence intelligence) {
-		super("Oppenent's hands", intelligence);
-		// TODO Auto-generated constructor stub
+		super("Opponents' hands", intelligence);
+
+        // Initialize Content
+        JPanel content = new JPanel();
+        content.setLayout(new GridLayout(0, 1));
+
+        // Initialize CardViews
+        cardViews = new CardView[ai.numPlayers];
+        for (int i = 0; i < cardViews.length; i++) {
+            cardViews[i] = new CardView();
+        }
+
+        // Initialize TitlePanels with CardViews, add to Content
+        for (int i = 0; i < cardViews.length; i++) {
+            TitlePanel p = new TitlePanel("Player " + (i+1));
+            p.addContent(cardViews[i]);
+            content.add(p);
+        }
+
+        // Add Content to PlayerPanel
+        addContent(content);
 	}
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
-		
+        for (int i = 0; i < ai.numPlayers; i++) {
+            cardViews[i].setCards(ai.opponents[i]);
+        }
+
+//        invalidate();
+//        repaint();
 	}
 
 }
