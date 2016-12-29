@@ -25,7 +25,7 @@ public class Intelligence {
     public HashMap<FIELD_TYPE, Integer> fieldScores;
 
 	private ActionListener updateListener;
-	
+
 	public void setUpdateListener(ActionListener listener) {
 		updateListener = listener;
         log(
@@ -40,7 +40,7 @@ public class Intelligence {
 	void causeUpdate() {
         SwingUtilities.invokeLater(() -> updateListener.actionPerformed(null));
         log(
-                "updateListener called"
+                "updateListener called\n"
         );
     }
 
@@ -75,14 +75,6 @@ public class Intelligence {
     }
 
     public void updateCard(Card c, Move m) {
-        // TODO update card location
-        // from facedown -> reduce by one
-        // from faceup -> if known at both: remove specific card, else invalidate stack and reduce by one
-        // from player -> if known at both: remove specific card, else invalidate stack and reduce by one
-        // to faceup -> know first
-        // to facedown -> wtf, but invalidate stack
-        // to player -> add
-
         if (handleFrom(c, m)) {
             handleTo(c, m);
             causeUpdate();
@@ -103,40 +95,8 @@ public class Intelligence {
                 );
                 break;
             case FACE_UP:
-                boolean removeUnknownCard = false;
-
-                if (!c.isUnknown()) { // card known
-                    int i = faceUp.indexOf(c);  // try to find card
-                    boolean found = (i != -1);
-                    if (!found) {                // if not found, treat like unknown card
-                        removeUnknownCard = true;
-                        log(
-                                "known face up card not found, treating like unknown..."
-                        );
-                    } else {
-                        try {
-                            faceUp.remove(i);       // remove found card
-                            log(
-                                    "known face up card removed"
-                            );
-                        } catch (IndexOutOfBoundsException e) {
-                            log(
-                                    "face up card not found, all cards known"
-                            );
-                            return false;
-                        }
-                    }
-                }
-
-                if (c.isUnknown() || removeUnknownCard) { // card unknown
-                    // decrease probability of all cards except first (if he had taken that one, we'd know)
-                    for (int i = 1; i < faceUp.size(); i++) {
-                        faceUp.get(i).prob *= 1f - 1f/(faceUp.size() - 1);
-                    }
-                    log(
-                            "unknown face up card removed, probabilities decreased"
-                    );
-                }
+                if (!probDecrease(faceUp, "face up", c, 1))
+                    return false;
                 break;
             case SELF: // all cards known
                 try {
@@ -146,7 +106,7 @@ public class Intelligence {
                     );
                 } catch (IndexOutOfBoundsException e) {
                     log(
-                            "own card not found, all cards known"
+                            "ERROR: own card not found, although all cards known"
                     );
                     return false;
                 }
@@ -172,35 +132,51 @@ public class Intelligence {
         }
 
         if (opponentIndex != -1) {
-            if (c.isUnknown()) { // card unknown
-                // decrease probability of all cards
-                for (int i = 0; i < opponents[opponentIndex].size(); i++) {
-                    opponents[opponentIndex].get(i).prob *= 1f - 1f/(opponents[opponentIndex].size());
-                }
-                log(
-                        "unknown opponent card removed, probabilities decreased"
-                );
-            } else { // card known
-                int i = opponents[opponentIndex].indexOf(c);  // try to find card
-                boolean found = (i != -1);
-                if (!found)                 // if not found, find an unknown card
-                    i = opponents[opponentIndex].indexOf(new Card());
-                try {
-                    opponents[opponentIndex].remove(i);       // remove found card
-                    log(
-                            found ? "known opponent card removed" : "known opponent card not found, unknown card removed"
-                    );
-                } catch (IndexOutOfBoundsException e) {
-                    log(
-                            "opponent card not found, all cards known"
-                    );
-                    return false;
-                }
-            }
+            if (!probDecrease(opponents[opponentIndex], "opponent", c, 0))
+                return false;
         }
 
         return true;
 	}
+
+	public static boolean probDecrease(ArrayList<Card> faceUp, String collLabel, Card c, int startIndex) {
+        int i = faceUp.indexOf(c);  // try to find card
+        boolean found = (i != -1);
+        if (!found) {                // if not found, treat like unknown card
+            log(
+                    "known " + collLabel + " card not found, treating like unknown..."
+            );
+        } else {
+            try {
+                faceUp.remove(i);       // remove found card
+                log(
+                        "known " + collLabel + " card removed"
+                );
+            } catch (IndexOutOfBoundsException e) {
+                log(
+                        collLabel + " card not found, all cards known"
+                );
+                return false;
+            }
+        }
+
+        if (!found) { // card unknown
+            // decrease probability of all cards, starting at startIndex
+            double sum = 0;
+            for (int j = startIndex; j < faceUp.size(); j++) {
+                sum += faceUp.get(j).prob;
+            }
+            double multiplier = 1 - 1/sum;
+            for (int j = startIndex; j < faceUp.size(); j++) {
+                faceUp.get(j).prob *= multiplier;
+            }
+            log(
+                    "unknown " + collLabel + " card removed, probabilities decreased"
+            );
+        }
+
+        return true;
+    }
 
     private void handleTo(Card c, Move m) {
         int opponentIndex = -1;
@@ -251,12 +227,12 @@ public class Intelligence {
         }
     }
 
-    static int countCards(ArrayList<Card> list) {
-	    float count = 0;
+    public static double countCards(ArrayList<Card> list) {
+	    double count = 0;
 	    for (Card c : list) {
 	        count += c.prob;
         }
-        return (int) count;
+        return count;
     }
 
     static void log(String message) {

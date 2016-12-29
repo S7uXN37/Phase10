@@ -7,7 +7,7 @@ public class Card {
 
     public int number = -1;
     public int colorIndex = -1;
-    public float prob = 1f;
+    public double prob = 1f;
 
     public Card() {
         number = -1;
@@ -67,7 +67,7 @@ public class Card {
     public boolean equals(Object obj) {
         if (obj instanceof Card) {
             Card c = (Card) obj;
-            return number == c.number && colorIndex == c.colorIndex;
+            return number == c.number && colorIndex == c.colorIndex && (prob - c.prob) < 0.01f;
         } else {
             return super.equals(obj);
         }
