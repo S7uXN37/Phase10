@@ -24,7 +24,7 @@ public class IntelligenceTest {
         try {
             Assert.assertTrue(lock.await(100, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e) {
-            Assert.assertTrue(false);
+            throw new RuntimeException(e);
         }
 
         Assert.assertTrue(success);

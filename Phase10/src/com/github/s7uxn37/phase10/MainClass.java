@@ -18,9 +18,11 @@ public class MainClass {
 		Runnable r;
 		switch(args == null ? 0 : args.length) {
             case 2:
+                //noinspection ConstantConditions
                 r = () -> noDialog(intelligence, Integer.parseInt(args[0]), args[1]);
                 break;
             case 1:
+                //noinspection ConstantConditions
                 r = () -> playerHandDialog(intelligence, Integer.parseInt(args[0]));
                 break;
             default:

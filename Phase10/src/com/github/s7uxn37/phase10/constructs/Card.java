@@ -67,9 +67,15 @@ public class Card {
     public boolean equals(Object obj) {
         if (obj instanceof Card) {
             Card c = (Card) obj;
-            return number == c.number && colorIndex == c.colorIndex && (prob - c.prob) < 0.01f;
+            return number == c.number && colorIndex == c.colorIndex && hashCode() == c.hashCode();
         } else {
             return super.equals(obj);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        String s = number + ";" + colorIndex + ";" + Math.round(prob*1000);
+        return s.hashCode();
     }
 }

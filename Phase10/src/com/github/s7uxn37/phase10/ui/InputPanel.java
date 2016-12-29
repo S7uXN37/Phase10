@@ -16,7 +16,6 @@ public class InputPanel extends ModulePanel {
 
 	public InputPanel(Intelligence intelligence) {
 		super("Input", intelligence);
-		// TODO Auto-generated constructor stub
 
         JPanel contentParent = new JPanel();
         contentParent.setLayout(new FlowLayout());
@@ -77,8 +76,7 @@ public class InputPanel extends ModulePanel {
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
-		
+		// nothing to update, no info from ai needed
 	}
 
 }
