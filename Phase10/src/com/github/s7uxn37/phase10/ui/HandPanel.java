@@ -2,8 +2,6 @@ package com.github.s7uxn37.phase10.ui;
 
 import com.github.s7uxn37.phase10.Intelligence;
 
-import java.awt.*;
-
 public class HandPanel extends ModulePanel {
     CardView handCards;
 

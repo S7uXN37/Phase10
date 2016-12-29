@@ -1,5 +1,6 @@
 package com.github.s7uxn37.phase10;
 
+import com.github.s7uxn37.phase10.constructs.Card;
 import com.github.s7uxn37.phase10.ui.*;
 
 import java.awt.Color;
@@ -7,8 +8,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.*;
 
@@ -16,7 +15,20 @@ public class MainClass {
 	public static void main(String args[]) {
 		Intelligence intelligence = new Intelligence();
 
-		SwingUtilities.invokeLater(() -> numPlayersDialog(intelligence));
+		Runnable r;
+		switch(args == null ? 0 : args.length) {
+            case 2:
+                r = () -> noDialog(intelligence, Integer.parseInt(args[0]), args[1]);
+                break;
+            case 1:
+                r = () -> playerHandDialog(intelligence, Integer.parseInt(args[0]));
+                break;
+            default:
+                r = () -> numPlayersDialog(intelligence);
+                break;
+        }
+
+		SwingUtilities.invokeLater(r);
 	}
 	
 	static void numPlayersDialog(Intelligence intelligence) {
@@ -57,11 +69,8 @@ public class MainClass {
 
 		JButton button = new JButton("OK");
 		button.addActionListener(e -> {
-            Card[] cards = toCards(textField.getText());
-            intelligence.init(numPlayers, cards);
             dialog.dispose();
-
-            initMain(intelligence);
+            noDialog(intelligence, numPlayers, textField.getText());
         });
 
 		dialog.setLayout(new FlowLayout());
@@ -75,6 +84,12 @@ public class MainClass {
 		dialog.setLocationRelativeTo(null);
 		dialog.setVisible(true);
 	}
+
+	static void noDialog(Intelligence intelligence, int numPlayers, String cardString) {
+        Card[] cards = Card.parseCards(cardString);
+        intelligence.init(numPlayers, cards);
+        initMain(intelligence);
+    }
 
     static void initMain(Intelligence intelligence) {
         JFrame frame = new JFrame("Phase 10 AI");
@@ -148,48 +163,4 @@ public class MainClass {
                 p.update();
         });
     }
-	
-	static Card[] toCards(String text) {
-		String[] cardStrings = text.split(",");
-		Card[] cards = new Card[cardStrings.length];
-		for (int i = 0; i < cardStrings.length; i++) {
-			String s = cardStrings[i];
-			s = s.replaceAll(" ", "").toUpperCase();
-
-			Card c = new Card();
-			switch (s.charAt(s.length() - 1)) { // BLUE, PURPLE, GREEN, RED
-                case 'B':
-                    c.colorIndex = 0;
-                    break;
-                case 'P':
-                case 'V':
-                    c.colorIndex = 1;
-                    break;
-                case 'G':
-                    c.colorIndex = 2;
-                    break;
-                case 'R':
-                    c.colorIndex = 3;
-                    break;
-				default:
-					c.colorIndex = 0;
-					break;
-			}
-			c.number = Integer.parseInt("" + s.substring(0, s.length() - 1));
-
-			cards[i] = c;
-		}
-		return cards;
-	}
-}
-
-class SimpleKeyListener implements KeyListener {
-    @Override
-    public void keyTyped(KeyEvent e) {    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {    }
 }

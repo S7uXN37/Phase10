@@ -1,6 +1,6 @@
 package com.github.s7uxn37.phase10.ui;
 
-import com.github.s7uxn37.phase10.Card;
+import com.github.s7uxn37.phase10.constructs.Card;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +17,34 @@ public class CardView extends JPanel {
     public void setCards(Card[] cards) {
         removeAll();
 
-        for (Card c : cards) {
+        int i = 0;
+        while (i < cards.length) {
+            Card c = cards[i];
             SingleCardView v = new SingleCardView(c);
+
+            if (c.isUnknown()) {
+                int length = 1;
+                for (int j = i+1; j < cards.length; j++) {
+                    if (cards[j].isUnknown())
+                        length++;
+                    else
+                        break;
+                }
+
+                if (length > 15) {
+                    Card replacement = new Card();
+                    replacement.number = length;
+
+                    v = new SingleCardView(replacement);
+                    add(v);
+
+                    i += length;
+                    continue;
+                }
+            }
+
             add(v);
+            i++;
         }
     }
 

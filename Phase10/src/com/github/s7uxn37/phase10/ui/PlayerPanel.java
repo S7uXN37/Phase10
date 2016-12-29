@@ -16,7 +16,7 @@ public class PlayerPanel extends ModulePanel {
         content.setLayout(new GridLayout(0, 1));
 
         // Initialize CardViews
-        cardViews = new CardView[ai.numPlayers];
+        cardViews = new CardView[ai.numOpponents];
         for (int i = 0; i < cardViews.length; i++) {
             cardViews[i] = new CardView();
         }
@@ -34,7 +34,7 @@ public class PlayerPanel extends ModulePanel {
 
 	@Override
 	public void update() {
-        for (int i = 0; i < ai.numPlayers; i++) {
+        for (int i = 0; i < ai.numOpponents; i++) {
             cardViews[i].setCards(ai.opponents[i]);
         }
 

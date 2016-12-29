@@ -4,9 +4,6 @@ import com.github.s7uxn37.phase10.Intelligence;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.JLabel;
 
 public abstract class ModulePanel extends TitlePanel {
 
