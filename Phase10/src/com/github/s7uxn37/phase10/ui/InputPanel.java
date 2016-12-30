@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class InputPanel extends ModulePanel {
     TargetInputPanel[] inputFields;
     CardInputPanel cardPanel;
+    CardsInputPanel cardsPanel;
     MoveInputPanel movePanel;
 
 	public InputPanel(Intelligence intelligence) {
@@ -45,10 +46,15 @@ public class InputPanel extends ModulePanel {
         movePanel = new MoveInputPanel();
         JButton submitMove = new JButton("Update card");
         submitMove.addActionListener(e -> causeUpdateCard());
+        cardsPanel = new CardsInputPanel();
+        JButton submitCards = new JButton("Update face up cards");
+        submitCards.addActionListener(e -> causeUpdateFaceUp());
 
         contentRight.add(cardPanel);
         contentRight.add(movePanel);
         contentRight.add(submitMove);
+        contentRight.add(cardsPanel);
+        contentRight.add(submitCards);
 
         // PARENT
         contentParent.add(contentLeft);
@@ -66,12 +72,16 @@ public class InputPanel extends ModulePanel {
 
         ai.updateDesires(targets);
     }
-
     void causeUpdateCard() {
         Card c = cardPanel.getSelected();
         Move m = movePanel.getSelected();
 
         ai.updateCard(c, m);
+    }
+    void causeUpdateFaceUp() {
+        Card[] cards = cardsPanel.getSelected();
+
+        ai.updateFaceUp(cards);
     }
 
 	@Override
@@ -135,6 +145,23 @@ class CardInputPanel extends JPanel {
 
     public Card getSelected() {
         return new Card(jTextField.getText());
+    }
+}
+class CardsInputPanel extends JPanel {
+    JTextField jTextField;
+
+    public CardsInputPanel() {
+        setLayout(new FlowLayout());
+        setBackground(Color.YELLOW);
+
+        jTextField = new JTextField(40);
+
+        add(new JLabel("Cards: "));
+        add(jTextField);
+    }
+
+    public Card[] getSelected() {
+        return Card.parseCards(jTextField.getText());
     }
 }
 

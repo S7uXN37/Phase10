@@ -37,9 +37,6 @@ public class PlayerPanel extends ModulePanel {
         for (int i = 0; i < ai.numOpponents; i++) {
             cardViews[i].setCards(ai.opponents[i]);
         }
-
-//        invalidate();
-//        repaint();
 	}
 
 }

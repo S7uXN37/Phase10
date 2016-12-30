@@ -1,5 +1,6 @@
 package com.github.s7uxn37.phase10.constructs;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 public class Card {
@@ -14,6 +15,12 @@ public class Card {
         colorIndex = -1;
     }
     public Card(String s) {
+        if (s.length() < 1) {
+            number = -1;
+            colorIndex = -1;
+            return;
+        }
+
         s = s.replaceAll(" ", "").toUpperCase();
 
         switch (s.charAt(s.length() - 1)) { // BLUE, PURPLE, GREEN, RED
@@ -52,7 +59,19 @@ public class Card {
         return number == -1 && colorIndex == -1;
     }
 
+    public boolean probIsZero() {
+        Card zero = new Card();
+        zero.number = number;
+        zero.colorIndex = colorIndex;
+        zero.prob = 0;
+
+        return zero.equals(this);
+    }
+
     public static Card[] parseCards(String text) {
+        if (text.length() == 0)
+            return new Card[0];
+
         String[] cardStrings = text.split(",");
 
         Card[] cards = new Card[cardStrings.length];
@@ -75,7 +94,7 @@ public class Card {
 
     @Override
     public int hashCode() {
-        String s = number + ";" + colorIndex + ";" + Math.round(prob*1000);
+        String s = number + ";" + colorIndex + ";" + Math.round(prob*100);
         return s.hashCode();
     }
 }

@@ -7,6 +7,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class CardView extends JPanel {
+    public static final java.awt.Color PURPLE = new java.awt.Color(128, 40, 128);
 
     public CardView() {
         setBackground(Color.GRAY);
@@ -61,40 +62,46 @@ class SingleCardView extends JPanel {
     JLabel label;
 
     public SingleCardView(Card c) {
-        setSize(50,100);
-
         card = c;
 
+        setSize(50,100);
+
         label = new JLabel();
-        label.setFont(label.getFont().deriveFont(80f));
+        label.setFont(label.getFont().deriveFont(40f));
+        label.setForeground(Color.BLACK);
         add(label);
+
+        setBackground(Color.WHITE);
 
         update();
     }
 
-    void update() {
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
         Color c = Color.WHITE;
         if (card.colorIndex != -1) {
             switch (Card.Color.values()[card.colorIndex]) {
                 case BLUE:
-                    c = Color.BLUE;
+                    c = Color.CYAN;
                     break;
                 case GREEN:
                     c = Color.GREEN;
                     break;
                 case PURPLE:
-                    c = Color.MAGENTA;
+                    c = CardView.PURPLE;
                     break;
                 case RED:
                     c = Color.RED;
                     break;
             }
         }
+        g.setColor(c);
+        g.fillRect(0, 0 , getWidth(), (int) (getHeight() * card.prob));
+    }
 
-        setBackground(c);
+    void update() {
         label.setText(card.number == -1 ? "?" : ("" + card.number));
-
-        invalidate();
-        repaint();
     }
 }

@@ -35,9 +35,6 @@ public class PoolPanel extends ModulePanel {
 	public void update() {
 		viewFaceDown.setCards(ai.faceDown);
 		viewFaceUp.setCards(ai.faceUp);
-
-//        invalidate();
-//        repaint();
 	}
 
 }

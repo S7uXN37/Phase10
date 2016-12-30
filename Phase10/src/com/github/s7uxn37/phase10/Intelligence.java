@@ -6,9 +6,7 @@ import com.github.s7uxn37.phase10.constructs.Target;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 public class Intelligence {
     public enum TARGET_TYPE {SAME_COLOR, SAME_NUMBER, RUN}
@@ -69,6 +67,11 @@ public class Intelligence {
 		);
 	}
 
+    public void updateFaceUp(Card[] cards) {
+        faceUp.clear();
+        faceUp.addAll(Arrays.asList(cards));
+    }
+
     public void updateDesires(ArrayList<Target> targets) {
         // TODO update desired cards
         // TODO update desired moves
@@ -77,6 +80,9 @@ public class Intelligence {
     public void updateCard(Card c, Move m) {
         if (handleFrom(c, m)) {
             handleTo(c, m);
+
+            faceUp.removeIf(Card::probIsZero);
+
             causeUpdate();
         } else {
             log(

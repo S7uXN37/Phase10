@@ -109,7 +109,7 @@ public class MainClass {
         );
 
         PoolPanel pool = new PoolPanel(intelligence);
-        pool.setBackground(Color.CYAN);
+        pool.setBackground(CardView.PURPLE);
         GridBagConstraints c = constraints;
         c.gridx = 0;
         c.gridy = 0;
@@ -128,7 +128,7 @@ public class MainClass {
         frame.add(desired, c);
 
         PlayerPanel players = new PlayerPanel(intelligence);
-        players.setBackground(Color.BLUE);
+        players.setBackground(Color.CYAN);
         c = constraints;
         c.gridx = 0;
         c.gridy = 1;
@@ -163,6 +163,7 @@ public class MainClass {
         intelligence.setUpdateListener(e -> {
             for (ModulePanel p : toUpdate)
                 p.update();
+            frame.validate();
         });
     }
 }
