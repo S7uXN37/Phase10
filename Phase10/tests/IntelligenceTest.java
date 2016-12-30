@@ -42,7 +42,7 @@ public class IntelligenceTest {
                 c.number = 2 + rand.nextInt(11);
                 c.colorIndex = rand.nextInt(5);
                 int startIndex = rand.nextInt(cards.size() - 5);
-                Assert.assertTrue(Intelligence.probDecrease(cards, "", c, startIndex));
+                Assert.assertTrue(Intelligence.handleRemove(cards, "", c, startIndex));
                 shouldBe--;
                 System.out.print("decreased prob of " + (cards.size()-startIndex) + " cards");
             } else {

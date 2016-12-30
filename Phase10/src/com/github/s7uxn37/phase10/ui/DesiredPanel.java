@@ -44,8 +44,8 @@ class FieldScoreView extends JPanel {
             p.setLayout(new GridLayout(1,0));
             p.setBackground(Color.GRAY);
 
-            JLabel field = new JLabel(t + ": ");
-            JLabel label = new JLabel("0");
+            JLabel field = new Label(t + ": ");
+            JLabel label = new Label("0");
             scores.put(t, label);
 
             p.add(field);

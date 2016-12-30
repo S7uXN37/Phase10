@@ -33,6 +33,7 @@ public class InputPanel extends ModulePanel {
         }
 
         JButton submitTargets = new JButton("Update desires");
+        submitTargets.setForeground(Label.TEXT_COLOR);
         submitTargets.addActionListener(e -> causeUpdateDesires());
 
         contentLeft.add(submitTargets);
@@ -45,9 +46,11 @@ public class InputPanel extends ModulePanel {
         cardPanel = new CardInputPanel();
         movePanel = new MoveInputPanel();
         JButton submitMove = new JButton("Update card");
+        submitMove.setForeground(Label.TEXT_COLOR);
         submitMove.addActionListener(e -> causeUpdateCard());
         cardsPanel = new CardsInputPanel();
         JButton submitCards = new JButton("Update face up cards");
+        submitCards.setForeground(Label.TEXT_COLOR);
         submitCards.addActionListener(e -> causeUpdateFaceUp());
 
         contentRight.add(cardPanel);
@@ -109,16 +112,19 @@ class TargetInputPanel extends JPanel {
         setBackground(Color.YELLOW);
 
         jComboBox = new JComboBox<>(options);
+        jComboBox.setForeground(Label.TEXT_COLOR);
 
         SpinnerNumberModel model = new SpinnerNumberModel(1, 0, 10, 1);
         argSpinner = new JSpinner(model);
+        argSpinner.getEditor().getComponent(0).setForeground(Label.TEXT_COLOR);
         SpinnerNumberModel model2 = new SpinnerNumberModel(0, 0, 10, 1);
         countSpinner = new JSpinner(model2);
+        countSpinner.getEditor().getComponent(0).setForeground(Label.TEXT_COLOR);
 
-        add(new JLabel(label));
+        add(new Label(label));
         add(jComboBox);
         add(argSpinner);
-        add(new JLabel(" x "));
+        add(new Label(" x "));
         add(countSpinner);
     }
 
@@ -138,8 +144,9 @@ class CardInputPanel extends JPanel {
         setBackground(Color.YELLOW);
 
         jTextField = new JTextField(5);
+        jTextField.setForeground(Label.TEXT_COLOR);
 
-        add(new JLabel("Card: "));
+        add(new Label("Card: "));
         add(jTextField);
     }
 
@@ -155,8 +162,9 @@ class CardsInputPanel extends JPanel {
         setBackground(Color.YELLOW);
 
         jTextField = new JTextField(40);
+        jTextField.setForeground(Label.TEXT_COLOR);
 
-        add(new JLabel("Cards: "));
+        add(new Label("Cards: "));
         add(jTextField);
     }
 
@@ -182,11 +190,13 @@ class MoveInputPanel extends JPanel {
         setBackground(Color.YELLOW);
 
         jComboBoxFrom = new JComboBox<>(options);
+        jComboBoxFrom.setForeground(Label.TEXT_COLOR);
         jComboBoxTo = new JComboBox<>(options);
+        jComboBoxTo.setForeground(Label.TEXT_COLOR);
 
-        add(new JLabel("Moved from: "));
+        add(new Label("Moved from: "));
         add(jComboBoxFrom);
-        add(new JLabel("to: "));
+        add(new Label("to: "));
         add(jComboBoxTo);
     }
 

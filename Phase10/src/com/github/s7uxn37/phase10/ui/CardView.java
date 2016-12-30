@@ -4,6 +4,9 @@ import com.github.s7uxn37.phase10.constructs.Card;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 public class CardView extends JPanel {
@@ -66,7 +69,7 @@ class SingleCardView extends JPanel {
 
         setSize(50,100);
 
-        label = new JLabel();
+        label = new Label();
         label.setFont(label.getFont().deriveFont(40f));
         label.setForeground(Color.BLACK);
         add(label);

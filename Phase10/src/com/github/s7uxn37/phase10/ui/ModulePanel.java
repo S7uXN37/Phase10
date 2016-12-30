@@ -2,8 +2,7 @@ package com.github.s7uxn37.phase10.ui;
 
 import com.github.s7uxn37.phase10.Intelligence;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
+import java.awt.*;
 
 public abstract class ModulePanel extends TitlePanel {
 
