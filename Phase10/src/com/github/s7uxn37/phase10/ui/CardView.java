@@ -86,8 +86,8 @@ class SingleCardView extends JPanel {
         Color c = Color.WHITE;
         if (card.colorIndex != -1) {
             switch (Card.Color.values()[card.colorIndex]) {
-                case BLUE:
-                    c = Color.CYAN;
+                case YELLOW:
+                    c = Color.YELLOW;
                     break;
                 case GREEN:
                     c = Color.GREEN;

@@ -1,4 +1,5 @@
-import com.github.s7uxn37.phase10.Intelligence;
+package com.github.s7uxn37.phase10;
+
 import com.github.s7uxn37.phase10.constructs.Card;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,7 +14,7 @@ public class IntelligenceTest {
     private CountDownLatch lock = new CountDownLatch(1);
     private boolean success = false;
     @Test
-    public void testCauseUpdate() {
+    public void causeUpdate() throws Exception {
         ActionListener actionListener = e -> {
             lock.countDown();
             success = true;
@@ -31,26 +32,26 @@ public class IntelligenceTest {
     }
 
     @Test
-    public void testCountCards() {
+    public void countCards() throws Exception {
         ArrayList<Card> cards = Card.getListUnknown(500);
         Random rand = new Random();
         int shouldBe = cards.size();
         for (int i = 0; i < 10000; i++) {
-            System.out.print("Pass: " + (i+1) + "  -  ");
+//            System.out.print("Pass: " + (i+1) + "  -  ");
             if (rand.nextDouble() < 0.5f) {
                 Card c = new Card();
                 c.number = 2 + rand.nextInt(11);
                 c.colorIndex = rand.nextInt(5);
                 int startIndex = rand.nextInt(cards.size() - 5);
-                Assert.assertTrue(Intelligence.handleRemove(cards, "", c, startIndex));
+                Assert.assertTrue(Intelligence.handleRemove(cards, "", c, startIndex, false));
                 shouldBe--;
-                System.out.print("decreased prob of " + (cards.size()-startIndex) + " cards");
+//                System.out.print("decreased prob of " + (cards.size()-startIndex) + " cards");
             } else {
                 float r = rand.nextFloat();
                 if (r < 0.3f) {
                     cards.add(new Card());
                     shouldBe++;
-                    System.out.print("added card");
+//                    System.out.print("added card");
                 } else {
                     int num = 1 + rand.nextInt(5);
                     for (int j = 0; j < num; j++) {
@@ -61,11 +62,11 @@ public class IntelligenceTest {
                         cards.add(c);
                     }
                     shouldBe++;
-                    System.out.print("added " + num + " cards with decreased prob");
+//                    System.out.print("added " + num + " cards with decreased prob");
                 }
             }
             double actual = Intelligence.countCards(cards);
-            System.out.println(", shouldBe: " + shouldBe + ", actual: " + actual);
+//            System.out.println(", shouldBe: " + shouldBe + ", actual: " + actual);
             Assert.assertEquals(shouldBe, actual, 0.4f);
         }
     }

@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Card {
-    public enum Color {BLUE, PURPLE, GREEN, RED}
+    public enum Color {YELLOW, PURPLE, GREEN, RED}
 
     public int number = -1;
     public int colorIndex = -1;
@@ -22,9 +22,10 @@ public class Card {
         }
 
         s = s.replaceAll(" ", "").toUpperCase();
+        number = Integer.parseInt("" + s.substring(0, s.length() - 1));
 
-        switch (s.charAt(s.length() - 1)) { // BLUE, PURPLE, GREEN, RED
-            case 'B':
+        switch (s.charAt(s.length() - 1)) { // YELLOW, PURPLE, GREEN, RED
+            case 'Y':
                 colorIndex = 0;
                 break;
             case 'P':
@@ -42,10 +43,9 @@ public class Card {
                 number = -1;
                 return;
             default:
-                colorIndex = 0;
-                break;
+                colorIndex = -1;
+                throw new IllegalArgumentException("Color not recognized");
         }
-        number = Integer.parseInt("" + s.substring(0, s.length() - 1));
     }
 
     public static ArrayList<Card> getListUnknown(int length) {

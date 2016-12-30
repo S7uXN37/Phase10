@@ -3,15 +3,20 @@ package com.github.s7uxn37.phase10.constructs;
 import com.github.s7uxn37.phase10.Intelligence;
 
 public class Target {
-    Intelligence.TARGET_TYPE type;
-    int arg;
+    public Intelligence.TARGET_TYPE type;
+    public int cardCount;
 
-    public Target(Intelligence.TARGET_TYPE type, int arg) {
+    public Target(Intelligence.TARGET_TYPE type, int cardCount) {
         this.type = type;
-        this.arg = arg;
+        this.cardCount = cardCount;
     }
 
-    public Target(String type, int arg) {
-        this(Intelligence.TARGET_TYPE.valueOf(type), arg);
+    public Target(String type, int cardCount) {
+        this(Intelligence.TARGET_TYPE.valueOf(type), cardCount);
+    }
+
+    @Override
+    public String toString() {
+        return type.toString() + " for " + cardCount + " cards";
     }
 }
