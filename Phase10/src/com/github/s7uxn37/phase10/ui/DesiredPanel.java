@@ -1,6 +1,7 @@
 package com.github.s7uxn37.phase10.ui;
 
 import com.github.s7uxn37.phase10.Intelligence;
+import com.github.s7uxn37.phase10.constructs.PartialTarget;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DesiredPanel extends ModulePanel {
-	CardView desiredCards;
+	JPanel targetPanel;
 	FieldScoreView fieldScores;
 
 	public DesiredPanel(Intelligence intelligence) {
@@ -17,10 +18,11 @@ public class DesiredPanel extends ModulePanel {
 		JPanel content = new JPanel();
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        desiredCards = new CardView();
+		targetPanel = new JPanel();
+		targetPanel.setLayout(new BoxLayout(targetPanel, BoxLayout.Y_AXIS));
         fieldScores = new FieldScoreView();
 
-		content.add(desiredCards);
+		content.add(targetPanel);
 		content.add(fieldScores);
 
 		addContent(content);
@@ -28,7 +30,19 @@ public class DesiredPanel extends ModulePanel {
 
 	@Override
 	public void update() {
-		desiredCards.setCards(ai.desired);
+	    targetPanel.removeAll();
+
+		for (PartialTarget d : ai.partialTargets) {
+		    JPanel desireView = new JPanel();
+
+		    CardView cardView = new CardView(CardView.SORTING.PROBABILITY);
+		    cardView.setCards(d.cards);
+
+		    desireView.add(new Label(d.target.toString()));
+		    desireView.add(cardView);
+
+		    targetPanel.add(desireView);
+        }
 		fieldScores.setScores(ai.fieldScores);
 	}
 }

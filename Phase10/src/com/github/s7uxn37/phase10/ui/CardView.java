@@ -4,22 +4,55 @@ import com.github.s7uxn37.phase10.constructs.Card;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.font.TextLayout;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class CardView extends JPanel {
-    public static final java.awt.Color PURPLE = new java.awt.Color(128, 40, 128);
+    public enum SORTING {NONE, NUMBER, COLOR, PROBABILITY}
 
+    public static final java.awt.Color PURPLE = new java.awt.Color(128, 40, 128);
+    private int sortingIndex;
+
+    public CardView(SORTING sorting) {
+        this();
+        ArrayList<SORTING> list = new ArrayList<>();
+        Collections.addAll(list, SORTING.values());
+        sortingIndex = list.indexOf(sorting);
+    }
     public CardView() {
         setBackground(Color.GRAY);
         setLayout(new FlowLayout());
         setVisible(true);
+        sortingIndex = 0;
     }
 
     public void setCards(Card[] cards) {
         removeAll();
+
+        Arrays.sort(cards, (o1, o2) -> {
+            int result;
+            int alg = sortingIndex;
+            do {
+                switch (SORTING.values()[alg]) {
+                    case COLOR: // doesn't matter
+                        result = Integer.compare(o1.colorIndex, o2.colorIndex);
+                        break;
+                    case NUMBER: // ascending
+                        result = Integer.compare(o1.number, o2.number);
+                        break;
+                    case PROBABILITY: // descending
+                        result = Double.compare(o2.prob, o1.prob);
+                        break;
+                    default:
+                        result = 0;
+                        break;
+                }
+                alg++;
+                alg = alg % SORTING.values().length;
+            } while (result == 0 && alg != sortingIndex);
+            return result;
+        });
 
         int i = 0;
         while (i < cards.length) {
@@ -101,7 +134,8 @@ class SingleCardView extends JPanel {
             }
         }
         g.setColor(c);
-        g.fillRect(0, 0 , getWidth(), (int) (getHeight() * card.prob));
+        int height = (int) (getHeight() * card.prob);
+        g.fillRect(0, getHeight() - height , getWidth(), height);
     }
 
     void update() {

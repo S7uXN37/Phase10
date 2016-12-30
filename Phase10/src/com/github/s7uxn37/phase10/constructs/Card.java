@@ -1,6 +1,5 @@
 package com.github.s7uxn37.phase10.constructs;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class Card {
@@ -22,6 +21,11 @@ public class Card {
         }
 
         s = s.replaceAll(" ", "").toUpperCase();
+        if (s.equals("?")) {
+            colorIndex = -1;
+            number = -1;
+            return;
+        }
         number = Integer.parseInt("" + s.substring(0, s.length() - 1));
 
         switch (s.charAt(s.length() - 1)) { // YELLOW, PURPLE, GREEN, RED
@@ -38,14 +42,15 @@ public class Card {
             case 'R':
                 colorIndex = 3;
                 break;
-            case '?':
-                colorIndex = -1;
-                number = -1;
-                return;
             default:
                 colorIndex = -1;
                 throw new IllegalArgumentException("Color not recognized");
         }
+    }
+    public Card(Card c) {
+        number = c.number;
+        colorIndex = c.colorIndex;
+        prob = c.prob;
     }
 
     public static ArrayList<Card> getListUnknown(int length) {
@@ -96,5 +101,10 @@ public class Card {
     public int hashCode() {
         String s = number + ";" + colorIndex + ";" + Math.round(prob*100);
         return s.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return number + " of " + Color.values()[colorIndex].toString() + " @ p=" + prob;
     }
 }

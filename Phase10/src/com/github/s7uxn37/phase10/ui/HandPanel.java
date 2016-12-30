@@ -9,7 +9,7 @@ public class HandPanel extends ModulePanel {
 		super("Your player", intelligence);
 
 		// Initialize CardView, add to HandPanel
-		handCards = new CardView();
+		handCards = new CardView(CardView.SORTING.NUMBER);
 //		handCards.setLayout(new GridLayout(0,8, 5, 5));
 		addContent(handCards);
 	}

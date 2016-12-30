@@ -3,14 +3,32 @@ package com.github.s7uxn37.phase10;
 import com.github.s7uxn37.phase10.constructs.Card;
 import com.github.s7uxn37.phase10.constructs.Target;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 public class MultiOptimizer {
     private static final int PARTITION_TIMEOUT = 10;
+    private static final int PARTITION_TIMEOUT_DEEP = 60;
 
+    private static boolean deepScanEnabled = false;
+
+    /**
+     * @param cards Cards to partition
+     * @param targets Targets to fulfill
+     * @return The partition: cards[i] belongs to targets[int[i]]
+     */
+    public static int[] partition(ArrayList<Card> cards, ArrayList<Target> targets) {
+        return partition(cards, targets, true);
+    }
+    /**
+     * @param cards Cards to partition
+     * @param targets Targets to fulfill
+     * @param verbose Log status?
+     * @return The partition: cards[i] belongs to targets[int[i]]
+     */
+    public static int[] partition(ArrayList<Card> cards, ArrayList<Target> targets, boolean verbose) {
+        return partition(cards.toArray(new Card[0]), targets.toArray(new Target[0]), verbose);
+    }
     /**
      * @param cards Cards to partition
      * @param targets Targets to fulfill
@@ -29,7 +47,7 @@ public class MultiOptimizer {
         int minTotDist = Integer.MAX_VALUE;
         int[] bestPartition = new int[cards.length];
 
-        long endMillis = System.currentTimeMillis() + 1000 * PARTITION_TIMEOUT;
+        long endMillis = System.currentTimeMillis() + 1000 * (deepScanEnabled ? PARTITION_TIMEOUT_DEEP : PARTITION_TIMEOUT);
         double possibilities = Math.pow(targets.length, cards.length);
 
         for (int partition = 0; partition < possibilities; partition++) {
@@ -37,13 +55,7 @@ public class MultiOptimizer {
             int[] allocations = toDigitArr(partition, targets.length, cards.length);
 
             // Split cards into ArrayLists
-            ArrayList<Card>[] split = (ArrayList<Card>[]) new ArrayList[targets.length];
-            for (int i = 0; i < split.length; i++) {
-                split[i] = new ArrayList<>();
-            }
-            for (int i = 0; i < cards.length; i++) {
-                split[allocations[i]].add(cards[i]);
-            }
+            ArrayList<Card>[] split = split(allocations, cards, targets.length);
 
             // Evaluate distance to each target, calculate sum
             int totDist = 0;
@@ -58,25 +70,40 @@ public class MultiOptimizer {
             }
 
             if (minTotDist == 0) {
-                Intelligence.log(
+                if(verbose) Intelligence.log(
                         "Partitioning completed on pass " + partition + "/" + (int)possibilities + " (" + (int)(100*partition/possibilities) + "%) - a perfect partitioning has been found"
                 );
                 break;
             }
             if (System.currentTimeMillis() >= endMillis) {
-                Intelligence.log(
+                if(verbose) Intelligence.log(
                         "Partitioning aborted on pass " + partition + "/" + (int)possibilities + " (" + (int)(100*partition/possibilities) + "%) - the timeout limit has been surpassed"
                 );
                 break;
             }
             if (partition == possibilities - 1) {
-                Intelligence.log(
+                if(verbose) Intelligence.log(
                         "Partitioning completed on pass " + (int)possibilities + "/" + (int)possibilities + " (100%) - all possibilities have been exhausted"
                 );
             }
         }
 
         return bestPartition;
+    }
+
+    public static ArrayList<Card>[] split(int[] partitioning, Card[] cards, int partitionCount) {
+        ArrayList<Card>[] split = (ArrayList<Card>[]) new ArrayList[partitionCount];
+        if (partitionCount == 0){
+            return split;
+        }
+
+        for (int i = 0; i < split.length; i++) {
+            split[i] = new ArrayList<>();
+        }
+        for (int i = 0; i < cards.length; i++) {
+            split[partitioning[i]].add(cards[i]);
+        }
+        return split;
     }
 
     static int[] toDigitArr(int i, int radix, int arrLength) {
@@ -121,11 +148,7 @@ public class MultiOptimizer {
 
                 return minDist;
             case SAME_COLOR: {
-                HashMap<Integer, Integer> colorCounts = new HashMap<>();
-                for (Card c : cards) {
-                    int prev = colorCounts.getOrDefault(c.colorIndex, 0);
-                    colorCounts.put(c.colorIndex, prev + 1);
-                }
+                HashMap<Integer, Integer> colorCounts = countValues(cards, card -> card.colorIndex);
 
                 int maxCount = 0;
                 for (Map.Entry<Integer, Integer> e : colorCounts.entrySet()) {
@@ -156,4 +179,20 @@ public class MultiOptimizer {
         return target.cardCount;
     }
 
+    public static HashMap<Integer,Integer> countValues(ArrayList<Card> cards, Function<Card, Integer> keyGetter) {
+        HashMap<Integer, Integer> valueCounts = new HashMap<>();
+        for (Card c : cards) {
+            int key = keyGetter.apply(c);
+            int prev = valueCounts.getOrDefault(key, 0);
+            valueCounts.put(key, prev + 1);
+        }
+        return valueCounts;
+    }
+
+    public static void setDeepScanEnabled(boolean deepScanEnabled) {
+        MultiOptimizer.deepScanEnabled = deepScanEnabled;
+        Intelligence.log(
+                "Deep scan enabled set to '%1$b'", deepScanEnabled
+        );
+    }
 }

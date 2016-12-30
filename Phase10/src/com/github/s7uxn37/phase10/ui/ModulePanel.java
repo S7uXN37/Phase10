@@ -7,7 +7,7 @@ import java.awt.*;
 public abstract class ModulePanel extends TitlePanel {
 
 	Intelligence ai;
-	
+
 	public ModulePanel(String title, Intelligence intelligence) {
 		super(title);
 		ai = intelligence;

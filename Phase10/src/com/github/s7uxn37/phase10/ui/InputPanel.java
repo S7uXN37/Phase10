@@ -1,5 +1,6 @@
 package com.github.s7uxn37.phase10.ui;
 
+import com.github.s7uxn37.phase10.MultiOptimizer;
 import com.github.s7uxn37.phase10.constructs.Card;
 import com.github.s7uxn37.phase10.Intelligence;
 import com.github.s7uxn37.phase10.constructs.Move;
@@ -32,11 +33,19 @@ public class InputPanel extends ModulePanel {
             contentLeft.add(inputFields[i]);
         }
 
-        JButton submitTargets = new JButton("Update desires");
+        JLabel deepModeLabel = new Label("Use deep scan?");
+        JCheckBox deepModeBox = new JCheckBox();
+        deepModeBox.addActionListener(e -> MultiOptimizer.setDeepScanEnabled(deepModeBox.isSelected()));
+        JButton submitTargets = new JButton("Update partialTargets");
         submitTargets.setForeground(Label.TEXT_COLOR);
         submitTargets.addActionListener(e -> causeUpdateDesires());
 
-        contentLeft.add(submitTargets);
+        JPanel submitContainer = new JPanel();
+        submitContainer.add(deepModeLabel);
+        submitContainer.add(deepModeBox);
+        submitContainer.add(submitTargets);
+
+        contentLeft.add(submitContainer);
 
         // RIGHT
         JPanel contentRight = new JPanel();

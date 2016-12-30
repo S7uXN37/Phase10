@@ -1,6 +1,7 @@
 package com.github.s7uxn37.phase10;
 
 import com.github.s7uxn37.phase10.constructs.Card;
+import com.github.s7uxn37.phase10.constructs.PartialTarget;
 import com.github.s7uxn37.phase10.constructs.Move;
 import com.github.s7uxn37.phase10.constructs.Target;
 
@@ -19,7 +20,7 @@ public class Intelligence {
     public ArrayList<Card> faceUp;
     public ArrayList<Card>[] opponents;
     public ArrayList<Card> player;
-    public ArrayList<Card> desired;
+    public ArrayList<PartialTarget> partialTargets;
     public HashMap<FIELD_TYPE, Integer> fieldScores;
 
 	private ActionListener updateListener;
@@ -54,7 +55,7 @@ public class Intelligence {
 		}
 		this.player = new ArrayList<>();
         Collections.addAll(player, playerCards);
-        this.desired = Card.getListUnknown(5);
+        this.partialTargets = new ArrayList<>();
         this.fieldScores = new HashMap<>();
         for (FIELD_TYPE t : FIELD_TYPE.values())
             this.fieldScores.put(t, 0);
@@ -70,14 +71,27 @@ public class Intelligence {
     public void updateFaceUp(Card[] cards) {
         faceUp.clear();
         faceUp.addAll(Arrays.asList(cards));
+
+        log(
+                "face up cards updated"
+        );
+
+        causeUpdate();
     }
 
     public void updateDesires(ArrayList<Target> targets) {
-        // TODO update desired cards:
-        // TODO find best card partitioning for targets
-        // TODO find best missing cards -> desired
+        // find best card partitioning for targets
+        int[] partitioning = MultiOptimizer.partition(player, targets);
 
-        // TODO update desired moves
+        // update partialTargets with partitioning
+        ArrayList<Card>[] splitCards = MultiOptimizer.split(partitioning, player.toArray(new Card[0]), targets.size());
+        partialTargets.clear();
+        for (int i = 0; i < targets.size(); i++) {
+            partialTargets.add(PartialTarget.getDesire(targets.get(i), splitCards[i]));
+        }
+
+        // TODO update partialTargets moves
+        causeUpdate();
     }
 
     public void updateCard(Card c, Move m) {

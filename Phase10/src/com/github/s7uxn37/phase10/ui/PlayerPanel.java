@@ -18,7 +18,7 @@ public class PlayerPanel extends ModulePanel {
         // Initialize CardViews
         cardViews = new CardView[ai.numOpponents];
         for (int i = 0; i < cardViews.length; i++) {
-            cardViews[i] = new CardView();
+            cardViews[i] = new CardView(CardView.SORTING.PROBABILITY);
         }
 
         // Initialize TitlePanels with CardViews, add to Content
