@@ -123,10 +123,10 @@ class TargetInputPanel extends JPanel {
         jComboBox = new JComboBox<>(options);
         jComboBox.setForeground(Label.TEXT_COLOR);
 
-        SpinnerNumberModel model = new SpinnerNumberModel(1, 0, 10, 1);
+        SpinnerNumberModel model = new SpinnerNumberModel(1, 0, 12, 1);
         argSpinner = new JSpinner(model);
         argSpinner.getEditor().getComponent(0).setForeground(Label.TEXT_COLOR);
-        SpinnerNumberModel model2 = new SpinnerNumberModel(0, 0, 10, 1);
+        SpinnerNumberModel model2 = new SpinnerNumberModel(0, 0, 5, 1);
         countSpinner = new JSpinner(model2);
         countSpinner.getEditor().getComponent(0).setForeground(Label.TEXT_COLOR);
 

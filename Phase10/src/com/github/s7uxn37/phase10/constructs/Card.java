@@ -65,12 +65,18 @@ public class Card {
     }
 
     public boolean probIsZero() {
-        Card zero = new Card();
-        zero.number = number;
-        zero.colorIndex = colorIndex;
-        zero.prob = 0;
+        return probIsValue(0d);
+    }
+    public boolean probIsOne() {
+        return probIsValue(1d);
+    }
+    public boolean probIsValue(double value) {
+        Card card = new Card();
+        card.number = number;
+        card.colorIndex = colorIndex;
+        card.prob = value;
 
-        return zero.equals(this);
+        return card.equals(this);
     }
 
     public static Card[] parseCards(String text) {
@@ -105,6 +111,6 @@ public class Card {
 
     @Override
     public String toString() {
-        return number + " of " + Color.values()[colorIndex].toString() + " @ p=" + prob;
+        return (number == -1 ? "unknown number" : number) + " of " + (colorIndex == -1 ? "unknown color" : Color.values()[colorIndex].toString()) + " @ p=" + prob;
     }
 }

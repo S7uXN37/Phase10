@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class DesiredPanel extends ModulePanel {
 	JPanel targetPanel;
-	FieldScoreView fieldScores;
+	FieldInfoView fieldScores;
 
 	public DesiredPanel(Intelligence intelligence) {
 		super("Desired cards", intelligence);
@@ -20,7 +20,7 @@ public class DesiredPanel extends ModulePanel {
 
 		targetPanel = new JPanel();
 		targetPanel.setLayout(new BoxLayout(targetPanel, BoxLayout.Y_AXIS));
-        fieldScores = new FieldScoreView();
+        fieldScores = new FieldInfoView();
 
 		content.add(targetPanel);
 		content.add(fieldScores);
@@ -37,21 +37,25 @@ public class DesiredPanel extends ModulePanel {
 
 		    CardView cardView = new CardView(CardView.SORTING.PROBABILITY);
 		    cardView.setCards(d.cards);
+            CardView missingCardsView = new CardView(CardView.SORTING.PROBABILITY);
+            missingCardsView.setCards(d.desiredCards);
 
 		    desireView.add(new Label(d.target.toString()));
 		    desireView.add(cardView);
+		    desireView.add(new Label("Cards missing: " + d.cardsMissing));
+            desireView.add(missingCardsView);
 
 		    targetPanel.add(desireView);
         }
-		fieldScores.setScores(ai.fieldScores);
+		fieldScores.setFieldInfo(ai.fieldInfo);
 	}
 }
 
-class FieldScoreView extends JPanel {
+class FieldInfoView extends JPanel {
     HashMap<Intelligence.FIELD_TYPE, JLabel> scores = new HashMap<>();
 
-    public FieldScoreView() {
-        setLayout(new GridLayout(0,2));
+    public FieldInfoView() {
+        setLayout(new GridLayout(0,2, 10, 0));
 
         for (Intelligence.FIELD_TYPE t : Intelligence.FIELD_TYPE.values()) {
             JPanel p = new JPanel();
@@ -68,9 +72,9 @@ class FieldScoreView extends JPanel {
         }
     }
 
-    public void setScores(HashMap<Intelligence.FIELD_TYPE, Integer> fieldScores) {
-        for (Map.Entry<Intelligence.FIELD_TYPE, Integer> e : fieldScores.entrySet()) {
-            scores.get(e.getKey()).setText("" + e.getValue());
+    public void setFieldInfo(HashMap<Intelligence.FIELD_TYPE, String> fieldScores) {
+        for (Map.Entry<Intelligence.FIELD_TYPE, String> e : fieldScores.entrySet()) {
+            scores.get(e.getKey()).setText(e.getValue());
         }
     }
 }

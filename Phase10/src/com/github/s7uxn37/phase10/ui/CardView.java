@@ -50,7 +50,7 @@ public class CardView extends JPanel {
                 }
                 alg++;
                 alg = alg % SORTING.values().length;
-            } while (result == 0 && alg != sortingIndex);
+            } while (sortingIndex != 0 && result == 0 && alg != sortingIndex);
             return result;
         });
 
@@ -107,7 +107,7 @@ class SingleCardView extends JPanel {
         label.setForeground(Color.BLACK);
         add(label);
 
-        setBackground(Color.WHITE);
+        setBackground(Color.LIGHT_GRAY);
 
         update();
     }

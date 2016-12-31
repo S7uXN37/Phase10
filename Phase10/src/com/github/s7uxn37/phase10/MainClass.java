@@ -72,7 +72,7 @@ public class MainClass {
 		JButton button = new JButton("OK");
 		button.addActionListener(e -> {
             dialog.dispose();
-            noDialog(intelligence, numPlayers, textField.getText());
+            noDialog(intelligence, numPlayers, textField.getText()); // TODO dialog to set topmost card in face up
         });
 
 		dialog.setLayout(new FlowLayout());
