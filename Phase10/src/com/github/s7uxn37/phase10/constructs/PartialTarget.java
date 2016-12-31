@@ -20,7 +20,7 @@ public class PartialTarget {
     private PartialTarget(Target t, Card[] assigned) {
         target = t;
         cards = assigned;
-        desiredCards = new ArrayList<>();// TODO set up
+        desiredCards = new ArrayList<>();
 
         ArrayList<Card> cards = new ArrayList<>();
         Collections.addAll(cards, assigned);

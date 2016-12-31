@@ -17,9 +17,13 @@ public class MainClass {
 
 		Runnable r;
 		switch(args == null ? 0 : args.length) {
+            case 3:
+                //noinspection ConstantConditions
+                r = () -> noDialog(intelligence, Integer.parseInt(args[0]), args[1], args[2]);
+                break;
             case 2:
                 //noinspection ConstantConditions
-                r = () -> noDialog(intelligence, Integer.parseInt(args[0]), args[1]);
+                r = () -> faceUpTopCardDialog(intelligence, Integer.parseInt(args[0]), args[1]);
                 break;
             case 1:
                 //noinspection ConstantConditions
@@ -61,7 +65,7 @@ public class MainClass {
 	}
 	
 	static void playerHandDialog(Intelligence intelligence, int numPlayers) {
-		JDialog dialog = new JDialog((JFrame)null, "Your player", true);
+		JDialog dialog = new JDialog((JFrame)null, "Your cards", true);
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		JLabel label = new JLabel("Cards in your player, separated by commas;"
@@ -72,7 +76,7 @@ public class MainClass {
 		JButton button = new JButton("OK");
 		button.addActionListener(e -> {
             dialog.dispose();
-            noDialog(intelligence, numPlayers, textField.getText()); // TODO dialog to set topmost card in face up
+            faceUpTopCardDialog(intelligence, numPlayers, textField.getText());
         });
 
 		dialog.setLayout(new FlowLayout());
@@ -87,9 +91,44 @@ public class MainClass {
 		dialog.setVisible(true);
 	}
 
-	static void noDialog(Intelligence intelligence, int numPlayers, String cardString) {
-        Card[] cards = Card.parseCards(cardString);
-        intelligence.init(numPlayers, cards);
+    static void faceUpTopCardDialog(Intelligence intelligence, int numPlayers, String playerHand) {
+        JDialog dialog = new JDialog((JFrame)null, "Top face up card", true);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        JLabel label = new JLabel("The top card of the face up stack;"
+                + " Colors are letters, numbers come before colors (e.g. 2B for a blue 2)");
+
+        JTextField textField = new JTextField(5);
+
+        JButton button = new JButton("OK");
+        button.addActionListener(e -> {
+            dialog.dispose();
+            noDialog(intelligence, numPlayers, playerHand, textField.getText());
+        });
+
+        dialog.setLayout(new FlowLayout());
+
+        dialog.add(label);
+        dialog.add(textField);
+        dialog.add(button);
+
+        dialog.setSize(660, 100);
+
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+    }
+
+    // TODO context menu for quick moving
+    // TODO set down cards, specify own desiredCards
+
+	static void noDialog(Intelligence intelligence, int numPlayers, String handString, String topCard) {
+        Card[] hand = Card.parseCards(handString);
+        intelligence.init(numPlayers, hand);
+
+        Card[] faceUp = intelligence.faceUp.toArray(new Card[0]);
+        faceUp[0] = new Card(topCard);
+        intelligence.updateFaceUp(faceUp);
+
         initMain(intelligence);
     }
 
