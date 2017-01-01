@@ -2,6 +2,7 @@ package com.github.s7uxn37.phase10.ui;
 
 import com.github.s7uxn37.phase10.Intelligence;
 
+import javax.swing.*;
 import java.awt.*;
 
 public abstract class ModulePanel extends TitlePanel {

@@ -22,12 +22,13 @@ public class Intelligence {
     public ArrayList<Card>[] opponents;
     public ArrayList<Card> player;
     public ArrayList<PartialTarget> partialTargets;
+    public ArrayList<PartialTarget> completedTargets;
     public HashMap<FIELD_TYPE, String> fieldInfo;
 
 	private ActionListener updateListener;
-    private HashMap<Integer, ArrayList<Card>> unknownPoolCache = new HashMap<>();
 
     private static final List<Card> allExistingCards;
+
     static {
         ArrayList<Card> allCards = new ArrayList<>();
         // Add all cards in game
@@ -45,7 +46,11 @@ public class Intelligence {
         allExistingCards = Collections.unmodifiableList(allCards);
     }
 
-	public void setUpdateListener(ActionListener listener) {
+    /**
+     * Sets updateListener variable, overwrites old value
+     * @param listener The listener to be called whenever a substantial change has occurred within the Intelligence
+     */
+    public void setUpdateListener(ActionListener listener) {
 		updateListener = listener;
         log(
                 "updateListener set"
@@ -56,14 +61,22 @@ public class Intelligence {
 		);
 	}
 
-	void causeUpdate() {
+    /**
+     * Calls updateListener, use whenever a substantial change has occurred within the Intelligence
+     */
+    void causeUpdate() {
         SwingUtilities.invokeLater(() -> updateListener.actionPerformed(null));
         log(
                 "updateListener called\n"
         );
     }
 
-	public void init(int numPlayers, Card[] playerCards) {
+    /**
+     * Initializes the Intelligence and sets up all variables
+     * @param numPlayers The number of total players in the game [2 - 6]
+     * @param playerCards The player's cards
+     */
+    public void init(int numPlayers, Card[] playerCards) {
 	    this.numOpponents = numPlayers - 1;
 
 		this.faceDown = Card.getListUnknown(96 - 10*numOpponents - playerCards.length - 5);
@@ -76,6 +89,7 @@ public class Intelligence {
 		this.player = new ArrayList<>();
         Collections.addAll(player, playerCards);
         this.partialTargets = new ArrayList<>();
+        this.completedTargets = new ArrayList<>();
         this.fieldInfo = new HashMap<>();
         for (FIELD_TYPE t : FIELD_TYPE.values())
             this.fieldInfo.put(t, "not calculated!");
@@ -88,6 +102,10 @@ public class Intelligence {
 		);
 	}
 
+    /**
+     * Updates the face up stack
+     * @param cards New content to overwrite the face up stack with
+     */
     public void updateFaceUp(Card[] cards) {
         faceUp.clear();
         faceUp.addAll(Arrays.asList(cards));
@@ -99,27 +117,172 @@ public class Intelligence {
         causeUpdate();
     }
 
-    public void updateDesires(ArrayList<Target> targets) {
-	    // ############# create PartialTargets with best partitioning and find missing cards
-        // find best card partitioning for targets
-        int[] partitioning = MultiOptimizer.partition(player, targets);
-
-        // update partialTargets with partitioning
-        ArrayList<Card>[] splitCards = MultiOptimizer.split(partitioning, player.toArray(new Card[0]), targets.size());
-        partialTargets.clear();
-        for (int i = 0; i < targets.size(); i++) {
-            partialTargets.add(PartialTarget.getPartialTarget(targets.get(i), splitCards[i]));
+    public void completeTargets(ArrayList<PartialTarget> targets, CARD_LOCATION source) { // TODO call
+        // Check if distance == 0
+        for (PartialTarget target : targets) {
+            if (Optimizer.distanceToTarget(getCardsInLocation(source), target.target) != 0) {
+                log(
+                        source.toString() + " - Completing " + targets.size() + " targets failed (distance != 0 for target: " + target.target.toString() + ")"
+                );
+                return;
+            }
         }
 
-        // ############# update partialTargets moves:
-        // combine missing cards from all targets
-        ArrayList<Card> combinedMissing = new ArrayList<>();
-        for (PartialTarget pt : partialTargets)
-            combinedMissing.addAll(pt.desiredCards);
-        ArrayList<Card> combinedUsed = new ArrayList<>();
-        for (PartialTarget pt : partialTargets)
-            Collections.addAll(combinedUsed, pt.cards);
+        // Try to remove cards, reverse if failed // TODO test with card.prob != 1
+        boolean canComplete = true;
+        Move m = new Move(source, source);
+        int i = 0;
+        while (i < targets.size() && i >= 0) {
+            PartialTarget target = targets.get(i);
+            int j = canComplete ? 0 : target.cards.length - 1;
+            while (j < target.cards.length && j >= 0) {
+                Card c = target.cards[j];
+                if (canComplete) {
+                    canComplete = handleFrom(c, m);
+                } else {
+                    handleTo(c, m);
+                }
 
+                if (canComplete)
+                    j++;
+                else
+                    j--;
+            }
+
+            if (canComplete)
+                i++;
+            else
+                i--;
+        }
+
+        if(canComplete) { // successful
+            completedTargets.addAll(targets);
+            log(
+                    source.toString() + " - " + targets.size() + " targets completed: " + targets.toString()
+            );
+        } else {
+            log(
+                    source.toString() + " - Completing " + targets.size() + " targets failed: " + targets.toString()
+            );
+        }
+
+        causeUpdate();
+    }
+
+    /**
+     * Updates all information displayed within the DesirePanel: Targets, PartialTargets with partition and missing cards, fieldInfo.
+     * If no targets are specified, desires will be set to add to completedTargets
+     * @param targets The targets to achieve; runtime increases exponentially with the amount of targets
+     */
+    public void updateDesires(ArrayList<Target> targets) {
+        if (targets.size() == 0) {
+            partialTargets.clear();
+
+            // make list of cards to add to completedTarget
+            ArrayList<Card> combinedMissing = new ArrayList<>();
+            int cardsUsed = 0;
+            Iterator<PartialTarget> it = completedTargets.iterator();
+            while (it.hasNext()) {
+                PartialTarget completedTarget = it.next();
+                if (completedTarget.target.cardCount < 1) {
+                    it.remove();
+                    continue;
+                }
+
+                ArrayList<Card> missing = new ArrayList<>();
+                switch (completedTarget.target.type) {
+                    case RUN:
+                        int maxValue = 0;
+                        int minValue = 13;
+                        for (Card card : completedTarget.cards) {
+                            if (card.number != -1) {
+                                maxValue = Math.min(Math.max(maxValue, card.number), 12);
+                                minValue = Math.max(Math.min(minValue, card.number), 1);
+                            }
+                        }
+                        if (maxValue < 12) {
+                            Card card = new Card();
+                            card.number = maxValue + 1;
+                            missing.add(card);
+                        }
+                        if (minValue > 1) {
+                            Card card = new Card();
+                            card.number = minValue - 1;
+                            missing.add(card);
+                        }
+                        break;
+                    case SAME_COLOR:
+                        Card card = new Card();
+                        card.colorIndex = completedTarget.cards[0].colorIndex;
+                        missing.add(card);
+                        break;
+                    case SAME_NUMBER:
+                        Card card2 = new Card();
+                        card2.colorIndex = completedTarget.cards[0].colorIndex;
+                        missing.add(card2);
+                }
+
+                // if player has cards, move from missing to available
+                ArrayList<Card> available = new ArrayList<>();
+                Iterator<Card> missingIt = missing.iterator();
+
+                outer_loop:
+                while (missingIt.hasNext()) {
+                    Card missingCard = missingIt.next();
+                    for (Card handCard : player) {
+                        if ((missingCard.number == -1 && handCard.colorIndex == missingCard.colorIndex) ||
+                                (missingCard.colorIndex == -1 && handCard.number == missingCard.number)) { // isMatch = (colorKnown && colorMatch) || (numberKnown && numberMatch)
+                            available.add(missingCard);
+                            missingIt.remove();
+                            continue outer_loop;
+                        }
+                    }
+                }
+
+                // save cards for updateFieldInfo
+                combinedMissing.addAll(missing);
+                cardsUsed += available.size();
+
+                // update partialTargets so cards are displayed after causeUpdate()
+                PartialTarget completeTarget = new PartialTarget(completedTarget.target, available.toArray(new Card[0]), missing);
+                partialTargets.add(completeTarget);
+            }
+
+            // call updateFieldInfo()
+            updateFieldInfo(combinedMissing, cardsUsed); //TODO give player.size() as argument to divide by
+        } else {
+            // ############# create PartialTargets with best partitioning and find missing cards
+            // find best card partitioning for targets
+            int[] partitioning = Optimizer.partition(player, targets);
+
+            // update partialTargets with partitioning
+            ArrayList<Card>[] splitCards = Optimizer.split(partitioning, player.toArray(new Card[0]), targets.size());
+            partialTargets.clear();
+            for (int i = 0; i < targets.size(); i++) {
+                partialTargets.add(PartialTarget.getPartialTarget(targets.get(i), splitCards[i]));
+            }
+
+            // ############# update partialTargets moves:
+            // combine missing cards from all targets
+            ArrayList<Card> combinedMissing = new ArrayList<>();
+            for (PartialTarget pt : partialTargets)
+                combinedMissing.addAll(pt.desiredCards);
+            ArrayList<Card> combinedUsed = new ArrayList<>();
+            for (PartialTarget pt : partialTargets)
+                Collections.addAll(combinedUsed, pt.cards);
+
+            updateFieldInfo(combinedMissing, countCards(combinedUsed));
+        }
+
+        causeUpdate();
+    }
+
+    /**
+     * Calculates best moves and additional information based on missing and used cards
+     * @param combinedMissing The cards still missing
+     * @param amountUsed Amount of cards allocated to the targets (affects amount of discarded cards for DISCARD_AND_TAKE)
+     */
+    private void updateFieldInfo(ArrayList<Card> combinedMissing, double amountUsed) {
         // sum desirable card for each CARD_LOCATION: how many useful cards are in this location?
         HashMap<CARD_LOCATION, Double> desirableCardAmount = new HashMap<>();
         double[] faceUpTopCardsPerc = new double[3]; // saves target achievement percentage for top 3 cards of faceUp
@@ -131,7 +294,7 @@ public class Intelligence {
             // count matches for each missing card in each CARD_LOCATION: How many of this card are in this location?
             for (Card desired : combinedMissing) {
                 double amount = 0;
-                ArrayList<Integer> indicesAddedToTopCardsPerc = new ArrayList<>();
+                ArrayList<Integer> excludeIndices = new ArrayList<>();
                 // first calculate matching cards
                 if (desired.isUnknown()) { // completely unknown -> match any card
                     amount += countCards(locationCards);
@@ -148,7 +311,7 @@ public class Intelligence {
                             );
                         }
                         if (card_location == CARD_LOCATION.FACE_UP) {
-                            tryUpdateTopCardsPerc(locationCards, c, indicesAddedToTopCardsPerc, deltaAmount, faceUpTopCardsPerc);
+                            tryUpdateTopCardsPerc(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPerc);
                         }
                         amount += deltaAmount;
                     }
@@ -165,7 +328,7 @@ public class Intelligence {
                             );
                         }
                         if (card_location == CARD_LOCATION.FACE_UP) {
-                            tryUpdateTopCardsPerc(locationCards, c, indicesAddedToTopCardsPerc, deltaAmount, faceUpTopCardsPerc);
+                            tryUpdateTopCardsPerc(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPerc);
                         }
                         amount += deltaAmount;
                     }
@@ -201,7 +364,7 @@ public class Intelligence {
                         }
 
                         if (card_location == CARD_LOCATION.FACE_UP) {
-                            tryUpdateTopCardsPerc(locationCards, c, indicesAddedToTopCardsPerc, deltaAmount, faceUpTopCardsPerc);
+                            tryUpdateTopCardsPerc(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPerc);
                         }
                         amount += deltaAmount;
                     }
@@ -249,7 +412,7 @@ public class Intelligence {
                     // probability = 1/locationAmount * desirableAmount * 1/missingAmount
                     double probFaceDown = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_DOWN, 0d) / (countCards(faceDown) * countCards(combinedMissing));
                     // totProb = (amountUseless + 1) * probability
-                    double amountUseless = Math.min(4, countCards(player) - countCards(combinedUsed));
+                    double amountUseless = Math.min(4, countCards(player) - amountUsed);
                     int percent = (int) ((amountUseless + 1) * probFaceDown * 100);
                     fieldInfo.put(field_type, percent + "%; discard " + (int)Math.round(amountUseless));
                     break;
@@ -307,16 +470,22 @@ public class Intelligence {
                 bestFields.add(field_type);
         }
         fieldInfo.put(FIELD_TYPE.ANY_FIELD, maxPercent + "%; " + bestFields.toString());
-
-        causeUpdate();
     }
 
-    private void tryUpdateTopCardsPerc(ArrayList<Card> locationCards, Card c, ArrayList<Integer> indicesAddedToTopCardsPerc, double deltaAmount, double[] faceUpTopCardsPerc) {
-        int index = locationCards.indexOf(c);
+    /**
+     * Searches the first entries in a stack for a desired card, outputs are saved into an array
+     * @param locationCards The cards present in the current location
+     * @param desired The desired card
+     * @param excludeIndices List of indices to exclude, new indices will be added
+     * @param deltaAmount Chance to find desired card by coincidence
+     * @param faceUpTopCardsPerc Array to save percentages into
+     */
+    private void tryUpdateTopCardsPerc(ArrayList<Card> locationCards, Card desired, ArrayList<Integer> excludeIndices, double deltaAmount, double[] faceUpTopCardsPerc) {
+        int index = locationCards.indexOf(desired);
         while_loop:
-        while (indicesAddedToTopCardsPerc.contains(index)) {
+        while (excludeIndices.contains(index)) {
             for (int i = index+1; i < locationCards.size(); i++) {
-                if (locationCards.get(i).equals(c)) {
+                if (locationCards.get(i).equals(desired)) {
                     index = i;
                     continue while_loop;
                 }
@@ -325,11 +494,16 @@ public class Intelligence {
             break;
         }
         if (index >= 0 && index < faceUpTopCardsPerc.length) {
-            indicesAddedToTopCardsPerc.add(index);
+            excludeIndices.add(index);
             faceUpTopCardsPerc[index] += deltaAmount;
         }
     }
 
+    /**
+     * Gets the percentage from a fieldInfo entry
+     * @param field_type The entry to look at
+     * @return The percentage saved in the entry, -1 if no percentage has been saved
+     */
     private int getPercentFromFieldInfo(FIELD_TYPE field_type) {
         String info = fieldInfo.getOrDefault(field_type, "0%");
         int endIndex = info.indexOf('%');
@@ -338,6 +512,10 @@ public class Intelligence {
         return Integer.parseInt(info.substring(0, endIndex));
     }
 
+    /**
+     * @param card_location The location to get the cards of
+     * @return The cards in that location
+     */
     private ArrayList<Card> getCardsInLocation(CARD_LOCATION card_location) {
 	    ArrayList<Card> locationCards;
         try {
@@ -376,6 +554,11 @@ public class Intelligence {
         return locationCards;
     }
 
+    /**
+     * Updates the location of a card after it has been moved
+     * @param c The card that was moved
+     * @param m The move the card was subject to
+     */
     public void updateCard(Card c, Move m) {
         if (handleFrom(c, m)) {
             handleTo(c, m);
@@ -390,6 +573,12 @@ public class Intelligence {
         }
 	}
 
+    /**
+     * Removes the card from its previous location and updates the stack accordingly
+     * @param c The card that was moved
+     * @param m The move the card was subject to
+     * @return True if the removal was successful, false otherwise
+     */
     private boolean handleFrom(Card c, Move m) {
         int opponentIndex = -1;
         switch (m.from) {
@@ -444,9 +633,15 @@ public class Intelligence {
         return true;
 	}
 
+    /**
+     * Auxiliary method to handleFrom, should not be called directly
+     */
     public static boolean handleRemove(ArrayList<Card> cards, String collLabel, Card c, int startIndex) {
 	    return handleRemove(cards, collLabel, c, startIndex, true);
     }
+    /**
+     * Auxiliary method to handleFrom, should not be called directly
+     */
 	public static boolean handleRemove(ArrayList<Card> cards, String collLabel, Card c, int startIndex, boolean verbose) {
         int i = cards.indexOf(c);  // try to find card
         boolean found = !c.isUnknown() && (i != -1); // finding an unknown card must always fail
@@ -486,6 +681,11 @@ public class Intelligence {
         return true;
     }
 
+    /**
+     * Adds a card to the stack it was moved to
+     * @param c The card that was moved
+     * @param m The move the card was subject to
+     */
     private void handleTo(Card c, Move m) {
         int opponentIndex = -1;
         switch (m.to) {
@@ -535,6 +735,11 @@ public class Intelligence {
         }
     }
 
+    /**
+     * Return the number of real cards in the list (as supposed to "fuzzy card" with card.prob < 1), different from list.size() because probabilities are added up
+     * @param list The list to count cards in
+     * @return The number of real cards in the list
+     */
     public static double countCards(ArrayList<Card> list) {
 	    double count = 0;
 	    for (Card c : list) {
@@ -543,6 +748,12 @@ public class Intelligence {
         return count;
     }
 
+    /**
+     * Calculates the probability to find a matching card when a unknown card is taken
+     * @param isMatch Predicate to identify matches
+     * @param isValidSample Predicate to identify valid sample space entries
+     * @return The probability to find a matching card at any point in the sample space
+     */
     public double unknownCardMatchProb(Predicate<Card> isMatch, Predicate<Card> isValidSample) {
 	    // create list of all possible unknown cards (cache it?)
         ArrayList<Card> known = new ArrayList<>();
@@ -578,9 +789,19 @@ public class Intelligence {
         return (double)matches / countCards(samples);
     }
 
+    /**
+     * Logs message
+     * @param message Message to log
+     */
     static void log(String message) {
 		System.out.println(message);
 	}
+
+    /**
+     * Logs message after applying String.format(format, args)
+     * @param format Message to log
+     * @param args Arguments to insert into message
+     */
     static void log(String format, Object... args) {
         log(String.format(format, args));
     }

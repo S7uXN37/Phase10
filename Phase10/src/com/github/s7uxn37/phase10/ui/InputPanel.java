@@ -1,14 +1,16 @@
 package com.github.s7uxn37.phase10.ui;
 
-import com.github.s7uxn37.phase10.MultiOptimizer;
+import com.github.s7uxn37.phase10.Optimizer;
 import com.github.s7uxn37.phase10.constructs.Card;
 import com.github.s7uxn37.phase10.Intelligence;
 import com.github.s7uxn37.phase10.constructs.Move;
+import com.github.s7uxn37.phase10.constructs.PartialTarget;
 import com.github.s7uxn37.phase10.constructs.Target;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.StringJoiner;
 
 public class InputPanel extends ModulePanel {
     TargetInputPanel[] inputFields;
@@ -16,8 +18,12 @@ public class InputPanel extends ModulePanel {
     CardsInputPanel cardsPanel;
     MoveInputPanel movePanel;
 
-	public InputPanel(Intelligence intelligence) {
+    JFrame frame;
+
+	public InputPanel(Intelligence intelligence, JFrame parent) {
 		super("Input", intelligence);
+
+		frame = parent;
 
         JPanel contentParent = new JPanel();
         contentParent.setLayout(new FlowLayout());
@@ -35,7 +41,7 @@ public class InputPanel extends ModulePanel {
 
         JLabel deepModeLabel = new Label("Use deep scan?");
         JCheckBox deepModeBox = new JCheckBox();
-        deepModeBox.addActionListener(e -> MultiOptimizer.setDeepScanEnabled(deepModeBox.isSelected()));
+        deepModeBox.addActionListener(e -> Optimizer.setDeepScanEnabled(deepModeBox.isSelected()));
         JButton submitTargets = new JButton("Update partialTargets");
         submitTargets.setForeground(Label.TEXT_COLOR);
         submitTargets.addActionListener(e -> causeUpdateDesires());
@@ -45,7 +51,24 @@ public class InputPanel extends ModulePanel {
         submitContainer.add(deepModeBox);
         submitContainer.add(submitTargets);
 
+        JLabel sourceLabel = new Label("Source: ");
+        String[] options = new String[Intelligence.CARD_LOCATION.values().length];
+        for (int i = 0; i < options.length; i++) {
+            options[i] = Intelligence.CARD_LOCATION.values()[i].toString();
+        }
+        JComboBox<String> jComboBox = new JComboBox<>(options);
+        jComboBox.setForeground(Label.TEXT_COLOR);
+        JButton completeButton = new JButton("Complete targets");
+        completeButton.setForeground(Label.TEXT_COLOR);
+        completeButton.addActionListener(e -> causeCompleteTargets((String)jComboBox.getSelectedItem()));
+
+        JPanel completeContainer = new JPanel();
+        completeContainer.add(sourceLabel);
+        completeContainer.add(jComboBox);
+        completeContainer.add(completeButton);
+
         contentLeft.add(submitContainer);
+        contentLeft.add(completeContainer);
 
         // RIGHT
         JPanel contentRight = new JPanel();
@@ -75,12 +98,16 @@ public class InputPanel extends ModulePanel {
         addContent(contentParent);
     }
 
+    private void causeCompleteTargets(String locStr) {
+        ArrayList<Target> targets = getAllTargets();
+        Intelligence.CARD_LOCATION source = Intelligence.CARD_LOCATION.valueOf(locStr);
+
+        CompletionDialog dialog = new CompletionDialog(frame, targets, source, ai);
+        dialog.makeVisible();
+    }
+
     void causeUpdateDesires() {
-        ArrayList<Target> targets = new ArrayList<>();
-        for (TargetInputPanel tip : inputFields) {
-            ArrayList<Target> selected = tip.getSelected();
-            targets.addAll(selected);
-        }
+        ArrayList<Target> targets = getAllTargets();
 
         ai.updateDesires(targets);
     }
@@ -101,6 +128,14 @@ public class InputPanel extends ModulePanel {
 		// nothing to update, no info from ai needed
 	}
 
+    public ArrayList<Target> getAllTargets() {
+        ArrayList<Target> targets = new ArrayList<>();
+        for (TargetInputPanel tip : inputFields) {
+            ArrayList<Target> selected = tip.getSelected();
+            targets.addAll(selected);
+        }
+        return targets;
+    }
 }
 
 class TargetInputPanel extends JPanel {
@@ -214,5 +249,73 @@ class MoveInputPanel extends JPanel {
                 Intelligence.CARD_LOCATION.valueOf((String) jComboBoxFrom.getSelectedItem()),
                 Intelligence.CARD_LOCATION.valueOf((String) jComboBoxTo.getSelectedItem())
         );
+    }
+}
+
+class CompletionDialog extends JDialog {
+    Intelligence ai;
+    Intelligence.CARD_LOCATION source;
+    ArrayList<Target> targets;
+    ArrayList<JTextField> textFields;
+
+    public CompletionDialog(JFrame parent, ArrayList<Target> targets, Intelligence.CARD_LOCATION source, Intelligence ai) {
+        super(parent, "Complete targets using " + source.toString(), true);
+
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+        this.ai = ai;
+        this.source = source;
+        this.targets = targets;
+        this.textFields = new ArrayList<>();
+
+        JLabel label = new Label("Enter cards to complete specified targets, all cards must be present in " + source.toString());
+        contentPanel.add(label);
+
+        for (Target target : targets) {
+            JPanel panel = new JPanel();
+
+            JLabel targetName = new Label(target.toString() + ": ");
+            JTextField textField = new JTextField(50);
+            textField.setForeground(Label.TEXT_COLOR);
+            textFields.add(textField);
+
+            panel.add(targetName);
+            panel.add(textField);
+
+            contentPanel.add(panel);
+        }
+
+        JButton submit = new JButton("Submit");
+        submit.setForeground(Label.TEXT_COLOR);
+        submit.addActionListener(e -> {
+            dispose();
+            submitCompletion();
+        });
+
+        contentPanel.add(submit);
+
+        add(contentPanel);
+    }
+
+    private void submitCompletion() {
+        ArrayList<PartialTarget> partialTargets = new ArrayList<>();
+        for (int i = 0; i < targets.size(); i++) {
+            PartialTarget partialTarget = new PartialTarget(
+                    targets.get(i),
+                    Card.parseCards(textFields.get(i).getText()),
+                    new ArrayList<>()
+            );
+            partialTargets.add(partialTarget);
+        }
+
+        ai.completeTargets(partialTargets, source);
+    }
+
+    public void makeVisible() {
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
 }

@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class DesiredPanel extends ModulePanel {
 	JPanel targetPanel;
+	JPanel completedPanel;
 	FieldInfoView fieldScores;
 
 	public DesiredPanel(Intelligence intelligence) {
@@ -21,9 +22,12 @@ public class DesiredPanel extends ModulePanel {
 		targetPanel = new JPanel();
 		targetPanel.setLayout(new BoxLayout(targetPanel, BoxLayout.Y_AXIS));
         fieldScores = new FieldInfoView();
+        completedPanel = new JPanel();
+        completedPanel.setLayout(new BoxLayout(completedPanel, BoxLayout.Y_AXIS));
 
 		content.add(targetPanel);
 		content.add(fieldScores);
+		content.add(completedPanel);
 
 		addContent(content);
 	}
@@ -31,24 +35,39 @@ public class DesiredPanel extends ModulePanel {
 	@Override
 	public void update() {
 	    targetPanel.removeAll();
+	    targetPanel.add(new Label("Partial Targets"));
+		for (PartialTarget target : ai.partialTargets) {
+		    JPanel partialTargetView = getPartialTargetView(target);
 
-		for (PartialTarget d : ai.partialTargets) {
-		    JPanel desireView = new JPanel();
-
-		    CardView cardView = new CardView(CardView.SORTING.PROBABILITY);
-		    cardView.setCards(d.cards);
-            CardView missingCardsView = new CardView(CardView.SORTING.PROBABILITY);
-            missingCardsView.setCards(d.desiredCards);
-
-		    desireView.add(new Label(d.target.toString()));
-		    desireView.add(cardView);
-		    desireView.add(new Label("Cards missing: " + d.cardsMissing));
-            desireView.add(missingCardsView);
-
-		    targetPanel.add(desireView);
+		    targetPanel.add(partialTargetView);
         }
+
 		fieldScores.setFieldInfo(ai.fieldInfo);
+
+        completedPanel.removeAll(); // TODO remove "Cards missing" & "for 6 cards" from PartialTargetView
+        completedPanel.add(new Label("Completed Targets"));
+        for (PartialTarget target : ai.completedTargets) {
+            JPanel partialTargetView = getPartialTargetView(target);
+
+            completedPanel.add(partialTargetView);
+        }
 	}
+
+    private JPanel getPartialTargetView(PartialTarget target) {
+        JPanel partialTargetView = new JPanel();
+
+        CardView cardView = new CardView(CardView.SORTING.PROBABILITY);
+        cardView.setCards(target.cards);
+        CardView missingCardsView = new CardView(CardView.SORTING.PROBABILITY);
+        missingCardsView.setCards(target.desiredCards);
+
+        partialTargetView.add(new Label(target.target.toString()));
+        partialTargetView.add(cardView);
+        partialTargetView.add(new Label("Cards missing: " + target.cardsMissing));
+        partialTargetView.add(missingCardsView);
+
+        return partialTargetView;
+    }
 }
 
 class FieldInfoView extends JPanel {

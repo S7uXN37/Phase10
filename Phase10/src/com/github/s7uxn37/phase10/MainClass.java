@@ -185,7 +185,7 @@ public class MainClass {
         c.gridheight = 1;
         frame.add(hand, c);
 
-        InputPanel input = new InputPanel(intelligence);
+        InputPanel input = new InputPanel(intelligence, frame);
         input.setBackground(Color.YELLOW);
         c = constraints;
         c.gridx = 2;

@@ -6,7 +6,7 @@ import com.github.s7uxn37.phase10.constructs.Target;
 import java.util.*;
 import java.util.function.Function;
 
-public class MultiOptimizer {
+public class Optimizer {
     private static final int PARTITION_TIMEOUT = 10;
     private static final int PARTITION_TIMEOUT_DEEP = 60;
 
@@ -190,7 +190,7 @@ public class MultiOptimizer {
     }
 
     public static void setDeepScanEnabled(boolean deepScanEnabled) {
-        MultiOptimizer.deepScanEnabled = deepScanEnabled;
+        Optimizer.deepScanEnabled = deepScanEnabled;
         Intelligence.log(
                 "Deep scan enabled set to '%1$b'", deepScanEnabled
         );

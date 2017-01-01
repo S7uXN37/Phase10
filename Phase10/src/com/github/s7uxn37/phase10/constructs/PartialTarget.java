@@ -1,6 +1,6 @@
 package com.github.s7uxn37.phase10.constructs;
 
-import com.github.s7uxn37.phase10.MultiOptimizer;
+import com.github.s7uxn37.phase10.Optimizer;
 
 import java.util.*;
 import java.util.function.Function;
@@ -24,7 +24,16 @@ public class PartialTarget {
 
         ArrayList<Card> cards = new ArrayList<>();
         Collections.addAll(cards, assigned);
-        cardsMissing = MultiOptimizer.distanceToTarget(cards, t);
+        cardsMissing = Optimizer.distanceToTarget(cards, t);
+    }
+    public PartialTarget(Target t, Card[] assigned, ArrayList<Card> desiredCards) {
+        this(t, assigned);
+        this.desiredCards = desiredCards;
+    }
+
+    @Override
+    public String toString() {
+        return "Target: " + target.toString() + " using: " + desiredCards.toString() + " distance: " + cardsMissing + " desired: " + desiredCards.toString();
     }
 
     public static PartialTarget getPartialTarget(Target target, ArrayList<Card> assigned) {
@@ -43,10 +52,10 @@ public class PartialTarget {
                 });
             case RUN:
                 // Calculate best distance for cards
-                int targetDist = MultiOptimizer.distanceToTarget(assigned, target);
+                int targetDist = Optimizer.distanceToTarget(assigned, target);
 
                 // Set up Map for number counts -> amount of cards with that number
-                HashMap<Integer, Integer> numberCounts = MultiOptimizer.countValues(assigned, card -> card.number);
+                HashMap<Integer, Integer> numberCounts = Optimizer.countValues(assigned, card -> card.number);
                 // Set up Map for number occurrences -> amount of desirable runs that number occurs in
                 HashMap<Integer, Integer> numberOccurrences = new HashMap<>();
                 for (Integer key : numberCounts.keySet()) {
@@ -120,7 +129,7 @@ public class PartialTarget {
     }
 
     private static PartialTarget setupSameTypePartialTarget(Target target, ArrayList<Card> assigned, Function<Card, Integer> keyGetter, Function<Integer, Card> cardSupplier) {
-        HashMap<Integer, Integer> typeCounts = MultiOptimizer.countValues(assigned, keyGetter);
+        HashMap<Integer, Integer> typeCounts = Optimizer.countValues(assigned, keyGetter);
         int maxCount = 0;
         for (Map.Entry<Integer, Integer> e : typeCounts.entrySet()) {
             if (e.getValue() > maxCount)

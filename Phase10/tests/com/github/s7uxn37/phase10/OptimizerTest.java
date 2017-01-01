@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class MultiOptimizerTest {
+public class OptimizerTest {
     @Test
     public void toDigitArr() throws Exception {
         for (int radix = 0; radix < 11; radix++) {
             int arrLength = 5;
             for (int number = 0; number < Math.pow(radix, arrLength); number++) {
-                int[] actual = MultiOptimizer.toDigitArr(number, radix, arrLength);
+                int[] actual = Optimizer.toDigitArr(number, radix, arrLength);
 
                 String s = Integer.toString(number, radix);
                 while (s.length() < arrLength)
@@ -49,7 +49,7 @@ public class MultiOptimizerTest {
             Collections.addAll(in, Card.parseCards(inCards[i]));
 
 //            System.out.println("Pass " + i + " - Cards:" + inCards[i] + " ; Target:" + inTargets[i] + " ; Expected:" + outputs[i]);
-            int actual = MultiOptimizer.distanceToTarget(in, inTargets[i]);
+            int actual = Optimizer.distanceToTarget(in, inTargets[i]);
 
             Assert.assertEquals(outputs[i], actual);
         }
@@ -91,7 +91,7 @@ public class MultiOptimizerTest {
 
         for (int i = 0; i < inCards.length && i < outputs.length && i < inTargets.length; i++) {
             Card[] cards = Card.parseCards(inCards[i]);
-            int[] actual = MultiOptimizer.partition(cards, inTargets[i], false);
+            int[] actual = Optimizer.partition(cards, inTargets[i], false);
 
             double poss = Math.pow(inTargets[i].length, cards.length);
             System.out.print("Pass " + i + "; " + poss + " possibilities - Cards:");
@@ -131,7 +131,7 @@ public class MultiOptimizerTest {
                 System.arraycopy(targets, 0, t, 0, t.length);
 
                 long start = System.currentTimeMillis();
-                int[] partition = MultiOptimizer.partition(c, t);
+                int[] partition = Optimizer.partition(c, t);
                 long end = System.currentTimeMillis();
                 System.out.println("Stress test #" + (++pass) + " - config:("+cardCount+","+targetCount+") time: " + (end-start) + "ms; result:" + Arrays.toString(partition) + "\n");
             }
