@@ -26,6 +26,7 @@ public class Intelligence {
     public HashMap<FIELD_TYPE, String> fieldInfo;
 
 	private ActionListener updateListener;
+    private boolean isAddingToCompletedTargets = false;
 
     private static final List<Card> allExistingCards;
 
@@ -117,7 +118,7 @@ public class Intelligence {
         causeUpdate();
     }
 
-    public void completeTargets(ArrayList<PartialTarget> targets, CARD_LOCATION source) { // TODO call
+    public void completeTargets(ArrayList<PartialTarget> targets, CARD_LOCATION source) {
         // Check if distance == 0
         for (PartialTarget target : targets) {
             if (Optimizer.distanceToTarget(getCardsInLocation(source), target.target) != 0) {
@@ -128,7 +129,7 @@ public class Intelligence {
             }
         }
 
-        // Try to remove cards, reverse if failed // TODO test with card.prob != 1
+        // Try to remove cards, reverse if failed
         boolean canComplete = true;
         Move m = new Move(source, source);
         int i = 0;
@@ -175,7 +176,8 @@ public class Intelligence {
      * @param targets The targets to achieve; runtime increases exponentially with the amount of targets
      */
     public void updateDesires(ArrayList<Target> targets) {
-        if (targets.size() == 0) {
+        isAddingToCompletedTargets = targets.size() == 0;
+        if (isAddingToCompletedTargets) {
             partialTargets.clear();
 
             // make list of cards to add to completedTarget
@@ -249,7 +251,7 @@ public class Intelligence {
             }
 
             // call updateFieldInfo()
-            updateFieldInfo(combinedMissing, cardsUsed); //TODO give player.size() as argument to divide by
+            updateFieldInfo(combinedMissing, cardsUsed, player.size());
         } else {
             // ############# create PartialTargets with best partitioning and find missing cards
             // find best card partitioning for targets
@@ -271,7 +273,7 @@ public class Intelligence {
             for (PartialTarget pt : partialTargets)
                 Collections.addAll(combinedUsed, pt.cards);
 
-            updateFieldInfo(combinedMissing, countCards(combinedUsed));
+            updateFieldInfo(combinedMissing, countCards(combinedUsed), countCards(combinedMissing));
         }
 
         causeUpdate();
@@ -282,7 +284,7 @@ public class Intelligence {
      * @param combinedMissing The cards still missing
      * @param amountUsed Amount of cards allocated to the targets (affects amount of discarded cards for DISCARD_AND_TAKE)
      */
-    private void updateFieldInfo(ArrayList<Card> combinedMissing, double amountUsed) {
+    private void updateFieldInfo(ArrayList<Card> combinedMissing, double amountUsed, double amountToWin) {
         // sum desirable card for each CARD_LOCATION: how many useful cards are in this location?
         HashMap<CARD_LOCATION, Double> desirableCardAmount = new HashMap<>();
         double[] faceUpTopCardsPerc = new double[3]; // saves target achievement percentage for top 3 cards of faceUp
@@ -379,14 +381,14 @@ public class Intelligence {
         for (FIELD_TYPE field_type : FIELD_TYPE.values()) {
             switch (field_type) {
                 case TAKE_FACE_DOWN: { // outputs average probability if one card is taken from top
-                    // all cards unknown -> probability = 1/locationAmount * desirableAmount * 1/missingAmount
-                    double probFaceDown = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_DOWN, 0d) / (countCards(faceDown) * countCards(combinedMissing));
+                    // all cards unknown -> probability = 1/locationAmount * desirableAmount * 1/amountToWin
+                    double probFaceDown = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_DOWN, 0d) / (countCards(faceDown) * amountToWin);
                     int percentDown = (int) (probFaceDown * 100);
                     fieldInfo.put(field_type, (percentDown) + "%");
                     break;
                 } case CHOOSE_FACE_UP: {
-                    // probability = desirableAmount * 1/missingAmount
-                    double probFaceUp = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_UP, 0d) / countCards(combinedMissing);
+                    // probability = desirableAmount * 1/amountToWin
+                    double probFaceUp = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_UP, 0d) / amountToWin;
                     int percent = (int) (probFaceUp * 100);
                     fieldInfo.put(field_type, percent + "%");
                     break;
@@ -398,27 +400,27 @@ public class Intelligence {
                         locationAmount += countCards(getCardsInLocation(location));
                         desirableAmount += desirableCardAmount.getOrDefault(location, 0d);
                     }
-                    // probability = 1/locationAmount * desirableAmount * 1/missingAmount
-                    double probability = desirableAmount / (locationAmount * countCards(combinedMissing));
+                    // probability = 1/locationAmount * desirableAmount * 1/amountToWin
+                    double probability = desirableAmount / (locationAmount * amountToWin);
                     int percent = (int) (probability * 100);
                     fieldInfo.put(field_type, percent + "%");
                     break;
                 } case JOKER: {
-                    // probability = 1/missingAmount
-                    int percent = (int) ((1d / countCards(combinedMissing)) * 100);
+                    // probability = 1/amountToWin
+                    int percent = (int) ((1d / amountToWin) * 100);
                     fieldInfo.put(field_type, percent + "%");
                     break;
                 } case DISCARD_AND_TAKE: {
-                    // probability = 1/locationAmount * desirableAmount * 1/missingAmount
-                    double probFaceDown = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_DOWN, 0d) / (countCards(faceDown) * countCards(combinedMissing));
+                    // probability = 1/locationAmount * desirableAmount * 1/amountToWin
+                    double probFaceDown = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_DOWN, 0d) / (countCards(faceDown) * amountToWin);
                     // totProb = (amountUseless + 1) * probability
                     double amountUseless = Math.min(4, countCards(player) - amountUsed);
                     int percent = (int) ((amountUseless + 1) * probFaceDown * 100);
                     fieldInfo.put(field_type, percent + "%; discard " + (int)Math.round(amountUseless));
                     break;
                 } case ALL_TAKE_ONE: {
-                    // probability = 1/locationAmount * desirableAmount * 1/missingAmount
-                    double probFaceDown = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_DOWN, 0d) / (countCards(faceDown) * countCards(combinedMissing));
+                    // probability = 1/locationAmount * desirableAmount * 1/amountToWin
+                    double probFaceDown = desirableCardAmount.getOrDefault(CARD_LOCATION.FACE_DOWN, 0d) / (countCards(faceDown) * amountToWin);
                     int percent = (int) (probFaceDown * 100);
                     fieldInfo.put(field_type, percent + "%");
                     break;
@@ -787,6 +789,10 @@ public class Intelligence {
 
         // return matches/entries
         return (double)matches / countCards(samples);
+    }
+
+    public boolean getIsAddingToCompletedTargets() {
+        return isAddingToCompletedTargets;
     }
 
     /**

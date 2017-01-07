@@ -119,7 +119,6 @@ public class MainClass {
     }
 
     // TODO context menu for quick moving
-    // TODO set down cards, specify own desiredCards
 
 	static void noDialog(Intelligence intelligence, int numPlayers, String handString, String topCard) {
         Card[] hand = Card.parseCards(handString);

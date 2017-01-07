@@ -37,23 +37,23 @@ public class DesiredPanel extends ModulePanel {
 	    targetPanel.removeAll();
 	    targetPanel.add(new Label("Partial Targets"));
 		for (PartialTarget target : ai.partialTargets) {
-		    JPanel partialTargetView = getPartialTargetView(target);
+		    JPanel partialTargetView = getPartialTargetView(target, !ai.getIsAddingToCompletedTargets());
 
 		    targetPanel.add(partialTargetView);
         }
 
 		fieldScores.setFieldInfo(ai.fieldInfo);
 
-        completedPanel.removeAll(); // TODO remove "Cards missing" & "for 6 cards" from PartialTargetView
+        completedPanel.removeAll();
         completedPanel.add(new Label("Completed Targets"));
         for (PartialTarget target : ai.completedTargets) {
-            JPanel partialTargetView = getPartialTargetView(target);
+            JPanel partialTargetView = getPartialTargetView(target, false);
 
             completedPanel.add(partialTargetView);
         }
 	}
 
-    private JPanel getPartialTargetView(PartialTarget target) {
+    private JPanel getPartialTargetView(PartialTarget target, boolean verboseView) {
         JPanel partialTargetView = new JPanel();
 
         CardView cardView = new CardView(CardView.SORTING.PROBABILITY);
@@ -61,9 +61,11 @@ public class DesiredPanel extends ModulePanel {
         CardView missingCardsView = new CardView(CardView.SORTING.PROBABILITY);
         missingCardsView.setCards(target.desiredCards);
 
-        partialTargetView.add(new Label(target.target.toString()));
+        String partialTargetStr = verboseView ? target.target.toString() : target.target.toString().split(" ")[0];
+
+        partialTargetView.add(new Label(partialTargetStr));
         partialTargetView.add(cardView);
-        partialTargetView.add(new Label("Cards missing: " + target.cardsMissing));
+        if (verboseView) partialTargetView.add(new Label("Cards missing: " + target.cardsMissing));
         partialTargetView.add(missingCardsView);
 
         return partialTargetView;
