@@ -5,8 +5,8 @@ import com.github.s7uxn37.phase10.Intelligence;
 import javax.swing.*;
 import java.awt.*;
 
-public class PlayerPanel extends ModulePanel {
-    CardView[] cardViews;
+public final class PlayerPanel extends ModulePanel {
+    private final CardView[] cardViews;
 
 	public PlayerPanel(Intelligence intelligence) {
 		super("Opponents' hands", intelligence);

@@ -5,8 +5,8 @@ import java.awt.*;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class TitlePanel extends JPanel {
-    public TitlePanel(String title) {
+class TitlePanel extends JPanel {
+    TitlePanel(String title) {
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.weighty = 0.1;
@@ -15,7 +15,7 @@ public class TitlePanel extends JPanel {
         setVisible(true);
     }
 
-    protected void addContent(Component comp) {
+    void addContent(Component comp) {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.gridy = 1;

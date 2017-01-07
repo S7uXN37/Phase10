@@ -2,7 +2,7 @@ package com.github.s7uxn37.phase10.constructs;
 
 import java.util.ArrayList;
 
-public class Card {
+public final class Card {
     public enum Color {YELLOW, PURPLE, GREEN, RED}
 
     public int number = -1;
@@ -60,17 +60,17 @@ public class Card {
         return list;
     }
 
-    public boolean isUnknown() {
+    public final boolean isUnknown() {
         return number == -1 && colorIndex == -1;
     }
 
-    public boolean probIsZero() {
+    public final boolean probIsZero() {
         return probIsValue(0d);
     }
-    public boolean probIsOne() {
+    public final boolean probIsOne() {
         return probIsValue(1d);
     }
-    public boolean probIsValue(double value) {
+    private boolean probIsValue(double value) {
         Card card = new Card();
         card.number = number;
         card.colorIndex = colorIndex;
@@ -94,7 +94,7 @@ public class Card {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (obj instanceof Card) {
             Card c = (Card) obj;
             return number == c.number && colorIndex == c.colorIndex && hashCode() == c.hashCode();
@@ -104,13 +104,13 @@ public class Card {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         String s = number + ";" + colorIndex + ";" + Math.round(prob*100);
         return s.hashCode();
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return (number == -1 ? "unknown number" : number) + " of " + (colorIndex == -1 ? "unknown color" : Color.values()[colorIndex].toString()) + " @ p=" + prob;
     }
 }

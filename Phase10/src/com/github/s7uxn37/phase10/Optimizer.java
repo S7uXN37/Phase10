@@ -6,7 +6,7 @@ import com.github.s7uxn37.phase10.constructs.Target;
 import java.util.*;
 import java.util.function.Function;
 
-public class Optimizer {
+public final class Optimizer {
     private static final int PARTITION_TIMEOUT = 10;
     private static final int PARTITION_TIMEOUT_DEEP = 60;
 
@@ -17,7 +17,7 @@ public class Optimizer {
      * @param targets Targets to fulfill
      * @return The partition: cards[i] belongs to targets[int[i]]
      */
-    public static int[] partition(ArrayList<Card> cards, ArrayList<Target> targets) {
+    static int[] partition(ArrayList<Card> cards, ArrayList<Target> targets) {
         return partition(cards, targets, true);
     }
     /**
@@ -26,7 +26,8 @@ public class Optimizer {
      * @param verbose Log status?
      * @return The partition: cards[i] belongs to targets[int[i]]
      */
-    public static int[] partition(ArrayList<Card> cards, ArrayList<Target> targets, boolean verbose) {
+    @SuppressWarnings("SameParameterValue")
+    private static int[] partition(ArrayList<Card> cards, ArrayList<Target> targets, boolean verbose) {
         return partition(cards.toArray(new Card[0]), targets.toArray(new Target[0]), verbose);
     }
     /**
@@ -34,7 +35,7 @@ public class Optimizer {
      * @param targets Targets to fulfill
      * @return The partition: cards[i] belongs to targets[int[i]]
      */
-    public static int[] partition(Card[] cards, Target[] targets) {
+    static int[] partition(Card[] cards, Target[] targets) {
         return partition(cards, targets, true);
     }
     /**
@@ -43,7 +44,7 @@ public class Optimizer {
      * @param verbose Log status?
      * @return The partition: cards[i] belongs to targets[int[i]]
      */
-    public static int[] partition(Card[] cards, Target[] targets, boolean verbose) {
+    static int[] partition(Card[] cards, Target[] targets, boolean verbose) {
         int minTotDist = Integer.MAX_VALUE;
         int[] bestPartition = new int[cards.length];
 
@@ -81,7 +82,7 @@ public class Optimizer {
                 );
                 break;
             }
-            if (partition == possibilities - 1) {
+            if (partition == Math.round(possibilities) - 1) {
                 if(verbose) Intelligence.log(
                         "Partitioning completed on pass " + (int)possibilities + "/" + (int)possibilities + " (100%) - all possibilities have been exhausted"
                 );
@@ -91,7 +92,8 @@ public class Optimizer {
         return bestPartition;
     }
 
-    public static ArrayList<Card>[] split(int[] partitioning, Card[] cards, int partitionCount) {
+    static ArrayList<Card>[] split(int[] partitioning, Card[] cards, int partitionCount) {
+        @SuppressWarnings("unchecked")
         ArrayList<Card>[] split = (ArrayList<Card>[]) new ArrayList[partitionCount];
         if (partitionCount == 0){
             return split;

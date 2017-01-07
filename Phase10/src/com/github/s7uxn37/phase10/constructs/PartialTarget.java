@@ -8,14 +8,14 @@ import java.util.function.Function;
 /**
  * Saves Card[] 'cards' that should be used to achieve Target 'target' to minimize missing cards
  */
-public class PartialTarget {
-    public Target target;
+public final class PartialTarget {
+    public final Target target;
     /**
      * Cards included in this partialTarget with Card.prob set to the percentage of cases in which the card is necessary
      */
-    public Card[] cards;
+    public final Card[] cards;
     public ArrayList<Card> desiredCards;
-    public int cardsMissing;
+    public final int cardsMissing;
 
     private PartialTarget(Target t, Card[] assigned) {
         target = t;
@@ -32,7 +32,7 @@ public class PartialTarget {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return "Target: " + target.toString() + " using: " + desiredCards.toString() + " distance: " + cardsMissing + " desired: " + desiredCards.toString();
     }
 

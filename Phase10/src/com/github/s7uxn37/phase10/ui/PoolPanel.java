@@ -5,8 +5,9 @@ import com.github.s7uxn37.phase10.Intelligence;
 import javax.swing.*;
 import java.awt.*;
 
-public class PoolPanel extends ModulePanel {
-	CardView viewFaceUp, viewFaceDown;
+public final class PoolPanel extends ModulePanel {
+	private final CardView viewFaceUp;
+    private final CardView viewFaceDown;
 
 	public PoolPanel(Intelligence intelligence) {
 		super("Card pool", intelligence);

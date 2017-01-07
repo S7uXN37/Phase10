@@ -10,7 +10,7 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class Intelligence {
+public final class Intelligence {
     public enum TARGET_TYPE {SAME_COLOR, SAME_NUMBER, RUN}
     public enum FIELD_TYPE {TAKE_FACE_DOWN, CHOOSE_FACE_UP, ASK, JOKER, DISCARD_AND_TAKE, ALL_TAKE_ONE, TAKE_AND_ROLL, ANY_FIELD}
     public enum CARD_LOCATION {FACE_DOWN, FACE_UP, PLAYER_1, PLAYER_2, PLAYER_3, PLAYER_4, PLAYER_5, SELF}
@@ -51,7 +51,7 @@ public class Intelligence {
      * Sets updateListener variable, overwrites old value
      * @param listener The listener to be called whenever a substantial change has occurred within the Intelligence
      */
-    public void setUpdateListener(ActionListener listener) {
+    final void setUpdateListener(ActionListener listener) {
 		updateListener = listener;
         log(
                 "updateListener set"
@@ -65,7 +65,7 @@ public class Intelligence {
     /**
      * Calls updateListener, use whenever a substantial change has occurred within the Intelligence
      */
-    void causeUpdate() {
+    private void causeUpdate() {
         SwingUtilities.invokeLater(() -> updateListener.actionPerformed(null));
         log(
                 "updateListener called\n"
@@ -77,7 +77,7 @@ public class Intelligence {
      * @param numPlayers The number of total players in the game [2 - 6]
      * @param playerCards The player's cards
      */
-    public void init(int numPlayers, Card[] playerCards) {
+    final void init(int numPlayers, Card[] playerCards) {
 	    this.numOpponents = numPlayers - 1;
 
 		this.faceDown = Card.getListUnknown(96 - 10*numOpponents - playerCards.length - 5);
@@ -107,7 +107,7 @@ public class Intelligence {
      * Updates the face up stack
      * @param cards New content to overwrite the face up stack with
      */
-    public void updateFaceUp(Card[] cards) {
+    public final void updateFaceUp(Card[] cards) {
         faceUp.clear();
         faceUp.addAll(Arrays.asList(cards));
 
@@ -118,7 +118,7 @@ public class Intelligence {
         causeUpdate();
     }
 
-    public void completeTargets(ArrayList<PartialTarget> targets, CARD_LOCATION source) {
+    public final void completeTargets(ArrayList<PartialTarget> targets, CARD_LOCATION source) {
         // Check if distance == 0
         for (PartialTarget target : targets) {
             if (Optimizer.distanceToTarget(getCardsInLocation(source), target.target) != 0) {
@@ -175,7 +175,7 @@ public class Intelligence {
      * If no targets are specified, desires will be set to add to completedTargets
      * @param targets The targets to achieve; runtime increases exponentially with the amount of targets
      */
-    public void updateDesires(ArrayList<Target> targets) {
+    public final void updateDesires(ArrayList<Target> targets) {
         isAddingToCompletedTargets = targets.size() == 0;
         if (isAddingToCompletedTargets) {
             partialTargets.clear();
@@ -287,7 +287,7 @@ public class Intelligence {
     private void updateFieldInfo(ArrayList<Card> combinedMissing, double amountUsed, double amountToWin) {
         // sum desirable card for each CARD_LOCATION: how many useful cards are in this location?
         HashMap<CARD_LOCATION, Double> desirableCardAmount = new HashMap<>();
-        double[] faceUpTopCardsPerc = new double[3]; // saves target achievement percentage for top 3 cards of faceUp
+        double[] faceUpTopCardsPercentage = new double[3]; // saves target achievement percentage for top 3 cards of faceUp
         for (CARD_LOCATION card_location : CARD_LOCATION.values()) {
             ArrayList<Card> locationCards = getCardsInLocation(card_location);
             if (locationCards.size() == 0) // -> self or opponent not found
@@ -313,7 +313,7 @@ public class Intelligence {
                             );
                         }
                         if (card_location == CARD_LOCATION.FACE_UP) {
-                            tryUpdateTopCardsPerc(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPerc);
+                            tryUpdateTopCardsPercentage(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPercentage);
                         }
                         amount += deltaAmount;
                     }
@@ -330,7 +330,7 @@ public class Intelligence {
                             );
                         }
                         if (card_location == CARD_LOCATION.FACE_UP) {
-                            tryUpdateTopCardsPerc(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPerc);
+                            tryUpdateTopCardsPercentage(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPercentage);
                         }
                         amount += deltaAmount;
                     }
@@ -366,7 +366,7 @@ public class Intelligence {
                         }
 
                         if (card_location == CARD_LOCATION.FACE_UP) {
-                            tryUpdateTopCardsPerc(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPerc);
+                            tryUpdateTopCardsPercentage(locationCards, c, excludeIndices, deltaAmount, faceUpTopCardsPercentage);
                         }
                         amount += deltaAmount;
                     }
@@ -480,9 +480,9 @@ public class Intelligence {
      * @param desired The desired card
      * @param excludeIndices List of indices to exclude, new indices will be added
      * @param deltaAmount Chance to find desired card by coincidence
-     * @param faceUpTopCardsPerc Array to save percentages into
+     * @param faceUpTopCardsPercentage Array to save percentages into
      */
-    private void tryUpdateTopCardsPerc(ArrayList<Card> locationCards, Card desired, ArrayList<Integer> excludeIndices, double deltaAmount, double[] faceUpTopCardsPerc) {
+    private void tryUpdateTopCardsPercentage(ArrayList<Card> locationCards, Card desired, ArrayList<Integer> excludeIndices, double deltaAmount, double[] faceUpTopCardsPercentage) {
         int index = locationCards.indexOf(desired);
         while_loop:
         while (excludeIndices.contains(index)) {
@@ -495,9 +495,9 @@ public class Intelligence {
             index = -1;
             break;
         }
-        if (index >= 0 && index < faceUpTopCardsPerc.length) {
+        if (index >= 0 && index < faceUpTopCardsPercentage.length) {
             excludeIndices.add(index);
-            faceUpTopCardsPerc[index] += deltaAmount;
+            faceUpTopCardsPercentage[index] += deltaAmount;
         }
     }
 
@@ -561,7 +561,7 @@ public class Intelligence {
      * @param c The card that was moved
      * @param m The move the card was subject to
      */
-    public void updateCard(Card c, Move m) {
+    public final void updateCard(Card c, Move m) {
         if (handleFrom(c, m)) {
             handleTo(c, m);
 
@@ -638,13 +638,14 @@ public class Intelligence {
     /**
      * Auxiliary method to handleFrom, should not be called directly
      */
-    public static boolean handleRemove(ArrayList<Card> cards, String collLabel, Card c, int startIndex) {
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted") // not inverted for clarity
+    private static boolean handleRemove(ArrayList<Card> cards, String collLabel, Card c, int startIndex) {
 	    return handleRemove(cards, collLabel, c, startIndex, true);
     }
     /**
      * Auxiliary method to handleFrom, should not be called directly
      */
-	public static boolean handleRemove(ArrayList<Card> cards, String collLabel, Card c, int startIndex, boolean verbose) {
+	static boolean handleRemove(ArrayList<Card> cards, String collLabel, Card c, int startIndex, boolean verbose) {
         int i = cards.indexOf(c);  // try to find card
         boolean found = !c.isUnknown() && (i != -1); // finding an unknown card must always fail
         if (!found) {                // if not found, treat like unknown card
@@ -742,7 +743,7 @@ public class Intelligence {
      * @param list The list to count cards in
      * @return The number of real cards in the list
      */
-    public static double countCards(ArrayList<Card> list) {
+    static double countCards(ArrayList<Card> list) {
 	    double count = 0;
 	    for (Card c : list) {
 	        count += c.prob;
@@ -756,7 +757,7 @@ public class Intelligence {
      * @param isValidSample Predicate to identify valid sample space entries
      * @return The probability to find a matching card at any point in the sample space
      */
-    public double unknownCardMatchProb(Predicate<Card> isMatch, Predicate<Card> isValidSample) {
+    private double unknownCardMatchProb(Predicate<Card> isMatch, Predicate<Card> isValidSample) {
 	    // create list of all possible unknown cards (cache it?)
         ArrayList<Card> known = new ArrayList<>();
         for (CARD_LOCATION card_location : CARD_LOCATION.values()) {
@@ -791,7 +792,7 @@ public class Intelligence {
         return (double)matches / countCards(samples);
     }
 
-    public boolean getIsAddingToCompletedTargets() {
+    public final boolean getIsAddingToCompletedTargets() {
         return isAddingToCompletedTargets;
     }
 

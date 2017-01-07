@@ -11,7 +11,7 @@ import java.awt.Insets;
 
 import javax.swing.*;
 
-public class MainClass {
+final class MainClass {
 	public static void main(String args[]) {
 		Intelligence intelligence = new Intelligence();
 
@@ -37,7 +37,7 @@ public class MainClass {
 		SwingUtilities.invokeLater(r);
 	}
 	
-	static void numPlayersDialog(Intelligence intelligence) {
+	private static void numPlayersDialog(Intelligence intelligence) {
 		JDialog dialog = new JDialog((JFrame)null, "Number of players", true);
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -64,7 +64,7 @@ public class MainClass {
         dialog.setVisible(true);
 	}
 	
-	static void playerHandDialog(Intelligence intelligence, int numPlayers) {
+	private static void playerHandDialog(Intelligence intelligence, int numPlayers) {
 		JDialog dialog = new JDialog((JFrame)null, "Your cards", true);
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -91,7 +91,7 @@ public class MainClass {
 		dialog.setVisible(true);
 	}
 
-    static void faceUpTopCardDialog(Intelligence intelligence, int numPlayers, String playerHand) {
+    private static void faceUpTopCardDialog(Intelligence intelligence, int numPlayers, String playerHand) {
         JDialog dialog = new JDialog((JFrame)null, "Top face up card", true);
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -120,7 +120,7 @@ public class MainClass {
 
     // TODO context menu for quick moving
 
-	static void noDialog(Intelligence intelligence, int numPlayers, String handString, String topCard) {
+	private static void noDialog(Intelligence intelligence, int numPlayers, String handString, String topCard) {
         Card[] hand = Card.parseCards(handString);
         intelligence.init(numPlayers, hand);
 
@@ -131,7 +131,7 @@ public class MainClass {
         initMain(intelligence);
     }
 
-    static void initMain(Intelligence intelligence) {
+    private static void initMain(Intelligence intelligence) {
         JFrame frame = new JFrame("Phase 10 AI");
         frame.setSize(1600, 950);
         frame.setLocationRelativeTo(null);

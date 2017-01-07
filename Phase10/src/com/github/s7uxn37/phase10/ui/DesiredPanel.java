@@ -8,10 +8,10 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DesiredPanel extends ModulePanel {
-	JPanel targetPanel;
-	JPanel completedPanel;
-	FieldInfoView fieldScores;
+public final class DesiredPanel extends ModulePanel {
+	private final JPanel targetPanel;
+	private final JPanel completedPanel;
+	private final FieldInfoView fieldScores;
 
 	public DesiredPanel(Intelligence intelligence) {
 		super("Desired cards", intelligence);
@@ -72,10 +72,10 @@ public class DesiredPanel extends ModulePanel {
     }
 }
 
-class FieldInfoView extends JPanel {
-    HashMap<Intelligence.FIELD_TYPE, JLabel> scores = new HashMap<>();
+final class FieldInfoView extends JPanel {
+    private final HashMap<Intelligence.FIELD_TYPE, JLabel> scores = new HashMap<>();
 
-    public FieldInfoView() {
+    FieldInfoView() {
         setLayout(new GridLayout(0,2, 10, 0));
 
         for (Intelligence.FIELD_TYPE t : Intelligence.FIELD_TYPE.values()) {
@@ -93,7 +93,7 @@ class FieldInfoView extends JPanel {
         }
     }
 
-    public void setFieldInfo(HashMap<Intelligence.FIELD_TYPE, String> fieldScores) {
+    final void setFieldInfo(HashMap<Intelligence.FIELD_TYPE, String> fieldScores) {
         for (Map.Entry<Intelligence.FIELD_TYPE, String> e : fieldScores.entrySet()) {
             scores.get(e.getKey()).setText(e.getValue());
         }

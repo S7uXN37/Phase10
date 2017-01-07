@@ -2,8 +2,8 @@ package com.github.s7uxn37.phase10.ui;
 
 import com.github.s7uxn37.phase10.Intelligence;
 
-public class HandPanel extends ModulePanel {
-    CardView handCards;
+public final class HandPanel extends ModulePanel {
+    private final CardView handCards;
 
 	public HandPanel(Intelligence intelligence) {
 		super("Your player", intelligence);

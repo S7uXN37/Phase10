@@ -2,9 +2,9 @@ package com.github.s7uxn37.phase10.constructs;
 
 import com.github.s7uxn37.phase10.Intelligence;
 
-public class Target {
-    public Intelligence.TARGET_TYPE type;
-    public int cardCount;
+public final class Target {
+    public final Intelligence.TARGET_TYPE type;
+    public final int cardCount;
 
     public Target(Intelligence.TARGET_TYPE type, int cardCount) {
         this.type = type;
@@ -16,7 +16,7 @@ public class Target {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return type.toString() + " for " + cardCount + " cards";
     }
 }

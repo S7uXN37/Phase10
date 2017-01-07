@@ -10,15 +10,14 @@ import com.github.s7uxn37.phase10.constructs.Target;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.StringJoiner;
 
-public class InputPanel extends ModulePanel {
-    TargetInputPanel[] inputFields;
-    CardInputPanel cardPanel;
-    CardsInputPanel cardsPanel;
-    MoveInputPanel movePanel;
+public final class InputPanel extends ModulePanel {
+    private final TargetInputPanel[] inputFields;
+    private final CardInputPanel cardPanel;
+    private final CardsInputPanel cardsPanel;
+    private final MoveInputPanel movePanel;
 
-    JFrame frame;
+    private final JFrame frame;
 
 	public InputPanel(Intelligence intelligence, JFrame parent) {
 		super("Input", intelligence);
@@ -106,18 +105,18 @@ public class InputPanel extends ModulePanel {
         dialog.makeVisible();
     }
 
-    void causeUpdateDesires() {
+    private void causeUpdateDesires() {
         ArrayList<Target> targets = getAllTargets();
 
         ai.updateDesires(targets);
     }
-    void causeUpdateCard() {
+    private void causeUpdateCard() {
         Card c = cardPanel.getSelected();
         Move m = movePanel.getSelected();
 
         ai.updateCard(c, m);
     }
-    void causeUpdateFaceUp() {
+    private void causeUpdateFaceUp() {
         Card[] cards = cardsPanel.getSelected();
 
         ai.updateFaceUp(cards);
@@ -128,7 +127,7 @@ public class InputPanel extends ModulePanel {
 		// nothing to update, no info from ai needed
 	}
 
-    public ArrayList<Target> getAllTargets() {
+    private ArrayList<Target> getAllTargets() {
         ArrayList<Target> targets = new ArrayList<>();
         for (TargetInputPanel tip : inputFields) {
             ArrayList<Target> selected = tip.getSelected();
@@ -138,8 +137,8 @@ public class InputPanel extends ModulePanel {
     }
 }
 
-class TargetInputPanel extends JPanel {
-    static String[] options;
+final class TargetInputPanel extends JPanel {
+    private static final String[] options;
     static {
         options = new String[Intelligence.TARGET_TYPE.values().length];
         for (int i = 0; i < options.length; i++) {
@@ -147,11 +146,11 @@ class TargetInputPanel extends JPanel {
         }
     }
 
-    JComboBox<String> jComboBox;
-    JSpinner argSpinner;
-    JSpinner countSpinner;
+    private JComboBox<String> jComboBox;
+    private JSpinner argSpinner;
+    private JSpinner countSpinner;
 
-    public TargetInputPanel(String label) {
+    TargetInputPanel(String label) {
         setLayout(new FlowLayout());
         setBackground(Color.YELLOW);
 
@@ -172,7 +171,7 @@ class TargetInputPanel extends JPanel {
         add(countSpinner);
     }
 
-    public ArrayList<Target> getSelected() {
+    final ArrayList<Target> getSelected() {
         ArrayList<Target> selected = new ArrayList<>();
         for (int i = 0; i < (Integer) countSpinner.getValue(); i++)
             selected.add(new Target((String) jComboBox.getSelectedItem(), (Integer) argSpinner.getValue()));
@@ -180,10 +179,10 @@ class TargetInputPanel extends JPanel {
     }
 }
 
-class CardInputPanel extends JPanel {
-    JTextField jTextField;
+final class CardInputPanel extends JPanel {
+    private final JTextField jTextField;
 
-    public CardInputPanel() {
+    CardInputPanel() {
         setLayout(new FlowLayout());
         setBackground(Color.YELLOW);
 
@@ -194,14 +193,14 @@ class CardInputPanel extends JPanel {
         add(jTextField);
     }
 
-    public Card getSelected() {
+    final Card getSelected() {
         return new Card(jTextField.getText());
     }
 }
-class CardsInputPanel extends JPanel {
-    JTextField jTextField;
+final class CardsInputPanel extends JPanel {
+    private final JTextField jTextField;
 
-    public CardsInputPanel() {
+    CardsInputPanel() {
         setLayout(new FlowLayout());
         setBackground(Color.YELLOW);
 
@@ -212,13 +211,13 @@ class CardsInputPanel extends JPanel {
         add(jTextField);
     }
 
-    public Card[] getSelected() {
+    final Card[] getSelected() {
         return Card.parseCards(jTextField.getText());
     }
 }
 
-class MoveInputPanel extends JPanel {
-    static String[] options;
+final class MoveInputPanel extends JPanel {
+    private static final String[] options;
     static {
         options = new String[Intelligence.CARD_LOCATION.values().length];
         for (int i = 0; i < options.length; i++) {
@@ -226,10 +225,10 @@ class MoveInputPanel extends JPanel {
         }
     }
 
-    JComboBox<String> jComboBoxFrom;
-    JComboBox<String> jComboBoxTo;
+    private JComboBox<String> jComboBoxFrom;
+    private JComboBox<String> jComboBoxTo;
 
-    public MoveInputPanel() {
+    MoveInputPanel() {
         setLayout(new FlowLayout());
         setBackground(Color.YELLOW);
 
@@ -244,7 +243,7 @@ class MoveInputPanel extends JPanel {
         add(jComboBoxTo);
     }
 
-    public Move getSelected() {
+    final Move getSelected() {
         return new Move(
                 Intelligence.CARD_LOCATION.valueOf((String) jComboBoxFrom.getSelectedItem()),
                 Intelligence.CARD_LOCATION.valueOf((String) jComboBoxTo.getSelectedItem())
@@ -252,13 +251,13 @@ class MoveInputPanel extends JPanel {
     }
 }
 
-class CompletionDialog extends JDialog {
-    Intelligence ai;
-    Intelligence.CARD_LOCATION source;
-    ArrayList<Target> targets;
-    ArrayList<JTextField> textFields;
+final class CompletionDialog extends JDialog {
+    private final Intelligence ai;
+    private final Intelligence.CARD_LOCATION source;
+    private final ArrayList<Target> targets;
+    private final ArrayList<JTextField> textFields;
 
-    public CompletionDialog(JFrame parent, ArrayList<Target> targets, Intelligence.CARD_LOCATION source, Intelligence ai) {
+    CompletionDialog(JFrame parent, ArrayList<Target> targets, Intelligence.CARD_LOCATION source, Intelligence ai) {
         super(parent, "Complete targets using " + source.toString(), true);
 
         JPanel contentPanel = new JPanel();
@@ -312,7 +311,7 @@ class CompletionDialog extends JDialog {
         ai.completeTargets(partialTargets, source);
     }
 
-    public void makeVisible() {
+    final void makeVisible() {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);

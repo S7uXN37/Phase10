@@ -8,26 +8,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class CardView extends JPanel {
+public final class CardView extends JPanel {
     public enum SORTING {NONE, NUMBER, COLOR, PROBABILITY}
 
     public static final java.awt.Color PURPLE = new java.awt.Color(128, 40, 128);
     private int sortingIndex;
 
-    public CardView(SORTING sorting) {
+    CardView(SORTING sorting) {
         this();
         ArrayList<SORTING> list = new ArrayList<>();
         Collections.addAll(list, SORTING.values());
         sortingIndex = list.indexOf(sorting);
     }
-    public CardView() {
+    CardView() {
         setBackground(Color.GRAY);
         setLayout(new FlowLayout());
         setVisible(true);
         sortingIndex = 0;
     }
 
-    public void setCards(Card[] cards) {
+    public final void setCards(Card[] cards) {
         removeAll();
 
         Arrays.sort(cards, (o1, o2) -> {
@@ -85,7 +85,7 @@ public class CardView extends JPanel {
         }
     }
 
-    public void setCards(ArrayList<Card> cards) {
+    public final void setCards(ArrayList<Card> cards) {
         Card[] c = new Card[cards.size()];
         for (int i = 0; i < c.length; i++)
             c[i] = cards.get(i);
@@ -93,11 +93,11 @@ public class CardView extends JPanel {
     }
 }
 
-class SingleCardView extends JPanel {
-    Card card;
-    JLabel label;
+final class SingleCardView extends JPanel {
+    private final Card card;
+    private final JLabel label;
 
-    public SingleCardView(Card c) {
+    SingleCardView(Card c) {
         card = c;
 
         setSize(50,100);
@@ -113,7 +113,7 @@ class SingleCardView extends JPanel {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
+    protected final void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         Color c = Color.WHITE;
@@ -138,7 +138,7 @@ class SingleCardView extends JPanel {
         g.fillRect(0, getHeight() - height , getWidth(), height);
     }
 
-    void update() {
+    private void update() {
         label.setText(card.number == -1 ? "?" : ("" + card.number));
     }
 }
