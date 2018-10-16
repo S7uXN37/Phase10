@@ -69,7 +69,7 @@ final class MainClass {
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
 		JLabel label = new JLabel("Cards in your player, separated by commas;"
-				+ " Colors are letters, numbers come before colors (e.g. 2B for a blue 2)");
+				+ " Colors are letters, numbers come before colors (e.g. 2Y for a yellow 2)");
 
 		JTextField textField = new JTextField(50);
 
